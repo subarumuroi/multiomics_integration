@@ -16,6 +16,7 @@ The algorithm:
 """
 
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.model_selection import LeaveOneOut, StratifiedKFold
 from sklearn.metrics import accuracy_score
@@ -245,7 +246,6 @@ class SPLSDA:
     
     def get_vip_df(self):
         """Return VIP scores as a sorted DataFrame."""
-        import pandas as pd
         names = self.feature_names_ or [f"f{i}" for i in range(len(self.vip_))]
         df = pd.DataFrame({"Feature": names, "VIP": self.vip_})
         df["Important"] = df["VIP"] >= 1.0
@@ -253,14 +253,12 @@ class SPLSDA:
     
     def get_loadings_df(self):
         """Return loadings as a DataFrame."""
-        import pandas as pd
         names = self.feature_names_ or [f"f{i}" for i in range(len(self.x_loadings_))]
         cols = [f"comp{h+1}" for h in range(self.n_components_)]
         return pd.DataFrame(self.x_weights_, index=names, columns=cols)
     
     def get_scores_df(self, sample_names=None):
         """Return sample scores as a DataFrame."""
-        import pandas as pd
         cols = [f"comp{h+1}" for h in range(self.n_components_)]
         idx = sample_names or list(range(self.x_scores_.shape[0]))
         return pd.DataFrame(self.x_scores_, index=idx, columns=cols)
@@ -528,9 +526,8 @@ class DIABLO:
         
         return vip
     
-    def _compute_correlations(self) -> np.ndarray:
+    def _compute_correlations(self) -> pd.DataFrame:
         """Pairwise correlations between block score vectors (comp 1)."""
-        import pandas as pd
         names = self.block_names_
         K = len(names)
         corr = np.eye(K)
@@ -570,7 +567,6 @@ class DIABLO:
     
     def get_vip_df(self, block_name: str):
         """VIP scores for a block as sorted DataFrame."""
-        import pandas as pd
         vip = self.block_vip_[block_name]
         names = self.feature_names_.get(block_name) or [f"f{i}" for i in range(len(vip))]
         df = pd.DataFrame({"Feature": names, "VIP": vip, "Block": block_name})
@@ -583,13 +579,11 @@ class DIABLO:
     
     def get_all_vip_df(self):
         """Combined VIP DataFrame across all blocks."""
-        import pandas as pd
         dfs = [self.get_vip_df(name) for name in self.block_names_]
         return pd.concat(dfs, ignore_index=True)
     
     def get_selected_features(self, block_name: str, component: int = 0):
         """Features with non-zero weights for a given component."""
-        import pandas as pd
         W = self.block_weights_[block_name][:, component]
         names = self.feature_names_.get(block_name) or [f"f{i}" for i in range(len(W))]
         mask = W != 0

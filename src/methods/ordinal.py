@@ -20,7 +20,7 @@ MODEL_MAP = {
 }
 
 
-def train_ordinal(X, y_encoded, model_type="AT", log_transform=True, alpha=1.0):
+def train_ordinal(X, y_encoded, model_type="AT", alpha=1.0):
     """Train an ordinal regression model.
     
     Parameters
@@ -28,23 +28,20 @@ def train_ordinal(X, y_encoded, model_type="AT", log_transform=True, alpha=1.0):
     X : ndarray (already preprocessed features)
     y_encoded : ndarray of ordinal integers (0, 1, 2)
     model_type : 'AT', 'IT', or 'SE'
-    log_transform : bool — apply log10 transform before scaling
     alpha : float — regularization parameter
     
     Returns
     -------
-    pipeline : fitted Pipeline (scaler + model)
-    coef_df : DataFrame of feature coefficients
+    pipeline : fitted Pipeline (MinMaxScaler + mord model)
+    coef : ndarray of model coefficients
     """
     if model_type not in MODEL_MAP:
         raise ValueError(f"model_type must be one of {list(MODEL_MAP.keys())}")
     
-    steps = []
-    if log_transform:
-        # Already handled in ingestion typically, but allow here for standalone use
-        pass
-    steps.append(("scaler", MinMaxScaler()))
-    steps.append(("model", MODEL_MAP[model_type](alpha=alpha)))
+    steps = [
+        ("scaler", MinMaxScaler()),
+        ("model", MODEL_MAP[model_type](alpha=alpha)),
+    ]
     
     pipeline = Pipeline(steps)
     pipeline.fit(X, y_encoded)
