@@ -1,0 +1,1 @@
+Note that I manually changed Sample ID to be consistent across all (used) datasets here to test that my workflows are working properly. Other repos/ folders use this same name but the files will be different because I changed the csvs to be consistent for extracting data and alignment.

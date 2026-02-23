@@ -1,0 +1,100 @@
+Feature,VIP,Important
+Hexanal Area,1.5418074912603177,True
+Propyl acetate Area,1.4165186518628046,True
+Heptanal Area,1.3797243795739,True
+Methyl isovalerate Area,1.3782552256818645,True
+1-Nonanol Area,1.3452286593372504,True
+(Z)-4-Heptenal Area,1.3130765733979803,True
+Butyl acetate Area,1.297700329179197,True
+3-Methyl-2-buten-1-ol Area,1.2946206160948381,True
+"2,4-Hexadienal Area",1.2839971010731557,True
+Hexyl acetate Area,1.263429516142899,True
+Propyl butyrate Area,1.2600252971890713,True
+Butyric acid Area,1.2530077627466452,True
+Isoamyl acetate Area,1.2483169494521358,True
+2-Methylbutyl acetate Area,1.2421253308411528,True
+2-Pentylfuran Area,1.2418232652368686,True
+3-Hexanone Area,1.2396101213267943,True
+"(E,E)-2,4-nonadienal Area",1.2110928539237702,True
+Allyl isothiocyanate Area,1.208539297836674,True
+(Z)-2-Penten-1-ol Area,1.2024733726495191,True
+trans-2-Penten-1-ol Area,1.1963896464731525,True
+trans-2-Hexenal Area,1.1870515648327047,True
+Ethyl 2-methylbutyrate Area,1.1767250371292317,True
+Ethyl octanoate Area,1.1639367688884097,True
+Propanoic acid Area,1.1547195944990714,True
+1-Butanol Area,1.1454551680110179,True
+2-Heptanol Area,1.1418920319062764,True
+gamma-Terpinene Area,1.1400254898620708,True
+2-Methyl-1-butanol Area,1.1348385615771037,True
+1-Octen-3-ol Area,1.1308497886327122,True
+Isoamyl alcohol Area,1.1302685384577562,True
+Guaiacol Area,1.1271141989695455,True
+Pentyl acetate Area,1.1268510653376456,True
+trans-2-Heptenal Area,1.124834874520848,True
+2-Methylpentan-2-ol Area,1.1143266922385822,True
+"2,6-Nonadienol Area",1.1048472786884298,True
+Ethyl 3-methylbutanoate Area,1.1015245109203473,True
+3-Pentanone Area,1.0832888921215433,True
+1-Hexen-3-one Area,1.0783580444212304,True
+(E)-2-Nonenal Area,1.0695390808061398,True
+2-Pentanone Area,1.0578916008468633,True
+"2,4-Heptadienal Area",1.0506086141195814,True
+Isopropyl hexanoate Area,1.050090142867603,True
+(Z)-hex-2-en-1-ol Area,1.0424820756660704,True
+trans-2-Hexen-1-ol Area,1.0417892695585875,True
+1-Pentanol Area,1.0405889010470095,True
+1-Hexanol Area,1.0324947459604734,True
+4-Ethylphenol Area,1.0321885145302814,True
+Ethyl vinyl ketone Area,1.0237102532542466,True
+Ethyl benzoate Area,1.014205872814792,True
+2-Nonanol Area,0.9998916921061277,False
+2-Ethylfuran Area,0.9948012958273075,False
+Ethyl laurate Area,0.9858354988115737,False
+Neryl acetate Area,0.9628184848165289,False
+2-Heptanone Area,0.9519744930139814,False
+6-Methoxyeugenol Area,0.951713362930189,False
+Acetoin Area,0.9495959182610599,False
+Isobutyric acid Area,0.9465209586088535,False
+Acetal Area,0.9374605811115249,False
+(Z)-beta-Ocimene Area,0.8971725527862925,False
+Eugenol Area,0.8955181585834052,False
+(Z)-Linalool oxide Area,0.885384337418468,False
+Hexyl butyrate Area,0.8837561360881678,False
+Geranyl butyrate Area,0.871593600606734,False
+Butyl hexanoate Area,0.8672864375925208,False
+Methyl isobutyl ketone Area,0.8672822026660789,False
+Phenylacetaldehyde Area,0.8643864837550516,False
+cis-3-Hexen-1-ol Area,0.8591140907156546,False
+(E)-Linalool oxide Area,0.8587781170334307,False
+6-Methyl-5-hepten-2-one Area,0.8556262637868662,False
+1-Heptanol Area,0.8543180851033397,False
+3-Octanone Area,0.8454693453822741,False
+Propyl hexanoate Area,0.8396171486327266,False
+2-Pentanol Area,0.8360324945364186,False
+Butyl 2-methylbutyrate Area,0.82934271882129,False
+"(2E,6Z)-nona-2,6-dienal Area",0.8102204421613336,False
+Acetophenone Area,0.7960831197486539,False
+(E)-2-Octen-1-ol Area,0.794289526630967,False
+(3Z)-3-Hexenyl acetate Area,0.7771602227613518,False
+Ethyl isobutyrate Area,0.7758039843801208,False
+2-Hexanone Area,0.7290121696482801,False
+Ethyl butanoate Area,0.7273188536533215,False
+Tetrahydrothiophene Area,0.7077093789986234,False
+Isoamyl butyrate Area,0.7015028505253568,False
+Nonyl acetate Area,0.6950387301662373,False
+Ethyl stearate Area,0.6771067373998396,False
+3-Mercapto-3-methylbutyl formate Area,0.6569939608778246,False
+Butyl decanoate Area,0.6417420695603318,False
+Geranyl isovalerate Area,0.6229227337530929,False
+Heptyl acetate Area,0.6210161723268288,False
+gamma-Undecalactone Area,0.5947046693032261,False
+3-Pentanol Area,0.5570098759361044,False
+1-Octen-3-one Area,0.5462289021561232,False
+Benzaldehyde Area,0.5303372235570345,False
+Octyl acetate Area,0.5253962162582747,False
+3-Methyl-2-butanone Area,0.5079038296571751,False
+Tetradecanal Area,0.47987259554696604,False
+alpha-Thujone Area,0.4710550051837992,False
+Ethyl valerate Area,0.4587735153098335,False
+Pentyl butyrate Area,0.23902523188728123,False

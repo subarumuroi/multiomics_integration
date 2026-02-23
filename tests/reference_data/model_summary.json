@@ -1,0 +1,35 @@
+{
+  "n_components": 2,
+  "n_samples": 9,
+  "blocks": [
+    {
+      "name": "amino_acids",
+      "n_features": 21,
+      "n_selected": [3, 3]
+    },
+    {
+      "name": "aromatics",
+      "n_features": 99,
+      "n_selected": [5, 5]
+    },
+    {
+      "name": "central_carbon",
+      "n_features": 33,
+      "n_selected": [3, 3]
+    },
+    {
+      "name": "proteomics",
+      "n_features": 5091,
+      "n_selected": [13, 13]
+    }
+  ],
+  "performance": {
+    "overall_error_comp1": null,
+    "overall_error_comp2": null,
+    "loo_accuracy_comp1": null
+  },
+  "tuning": {
+    "cv_error_rate": null,
+    "method": "Default (no tuning for n<15)"
+  }
+}
