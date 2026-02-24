@@ -1,93 +1,161 @@
 # Multi-Omics Integration
 
-Consolidated Python package for multi-omics classification, combining single-layer and joint integration analyses. Implements three complementary methods — **sPLS-DA / DIABLO**, **Random Forest**, and **Ordinal Regression** — validated against mixOmics R reference outputs.
+Python package for multi-omics classification and feature selection, combining supervised single-layer analyses with joint integration and unsupervised network methods. Designed for small-sample multi-omics studies where statistical rigour requires complementary approaches.
 
-Consolidates the functionality of `downstream_analysis`, `ML_omics`, and `ML_multiomics` into one minimal, self-contained package.
+Implements five complementary methods — **sPLS-DA / DIABLO**, **Random Forest**, **Ordinal Regression**, **Bootstrap Stability Selection**, and **WGCNA** — with **permutation testing** for significance assessment.
 
 ## Project Structure
 
 ```
 multiomics_integration/
-├── data/                        # Banana ripeness dataset (4 omics layers)
-│   ├── central_carbon.csv
-│   ├── amino_acids.csv
-│   ├── aromatics.csv
-│   └── proteomics.csv
+├── data/                           # Banana ripeness dataset (4 omics layers, n=9)
+│   ├── badata-amino-acids.csv
+│   ├── badata-aromatics.csv
+│   ├── badata-metabolomics.csv     # Central carbon metabolism
+│   └── badata-proteomics-imputed.csv
 ├── src/
-│   ├── ingestion.py             # Load, impute, filter, scale (Pareto, half-min, log)
-│   ├── visualization.py         # Scores plots, VIP bars, confusion matrices, consensus
-│   ├── utils.py                 # I/O helpers, consensus feature identification
+│   ├── ingestion.py                # Load, impute, transform, scale, align
+│   ├── visualization.py            # All plotting (scores, VIP, stability, permutation, WGCNA)
+│   ├── utils.py                    # I/O helpers, consensus feature identification
 │   └── methods/
-│       ├── plsda.py             # sPLS-DA (NIPALS + L1) and DIABLO (multi-block)
-│       ├── random_forest.py     # RF with SHAP, permutation importance, permutation test
-│       └── ordinal.py           # mord LogisticAT/IT/SE with ordinal class structure
+│       ├── plsda.py                # sPLS-DA, DIABLO, permutation tests, stability selection
+│       ├── random_forest.py        # RF with SHAP, permutation importance
+│       ├── ordinal.py              # mord LogisticAT/IT/SE
+│       └── wgcna.py                # Weighted correlation network analysis
 ├── examples/
-│   └── banana_workflow.py       # End-to-end demo: single-omics → multi-omics → consensus
+│   └── banana_workflow.py          # End-to-end demo: single → multi → consensus
 ├── tests/
-│   ├── validate_plsda.py        # Numerical validation vs mixOmics R reference
-│   └── reference_data/          # R reference outputs for validation
-├── results/                     # Generated outputs (gitignored)
+│   ├── validate_plsda.py           # Numerical validation vs mixOmics R reference
+│   └── reference_data/             # R reference outputs
+├── results/                        # Generated outputs (gitignored)
+├── setup.py
 └── requirements.txt
 ```
 
 ## Methods
 
-| Method | Class / Function | Type | Description |
-|--------|-----------------|------|-------------|
-| sPLS-DA | `SPLSDA` | Single-block | Sparse PLS-DA via NIPALS with L1 soft-thresholding on loadings |
-| DIABLO | `DIABLO` | Multi-block | Multi-block sPLS-DA with design matrix for inter-block covariance |
-| Random Forest | `train_rf` | Single / concat | Balanced RF with SHAP and permutation importance |
-| Ordinal Regression | `train_ordinal` | Single / concat | mord LogisticAT preserving class order (Green < Ripe < Overripe) |
+### Supervised Methods
+
+| Method | Module | Type | Purpose |
+|--------|--------|------|---------|
+| sPLS-DA | `plsda.SPLSDA` | Single-block | Sparse PLS-DA via NIPALS with L1 soft-thresholding — identifies discriminant features |
+| DIABLO | `plsda.DIABLO` | Multi-block | Multi-block sPLS-DA with design matrix — integrates across omics layers |
+| Random Forest | `random_forest.train_rf` | Single / concat | Balanced RF with Gini importance, SHAP values, and permutation importance |
+| Ordinal Regression | `ordinal.train_ordinal` | Single / concat | mord LogisticAT/IT/SE — respects class ordering (Green < Ripe < Overripe) |
+
+### Statistical Validation
+
+| Method | Module | Purpose |
+|--------|--------|---------|
+| Permutation Testing | `plsda.permutation_test_splsda`, `permutation_test_diablo` | Label-shuffling null distribution with Clopper-Pearson early stopping |
+| Bootstrap Stability | `plsda.stability_selection_splsda` | 100 stratified bootstrap resamples; features with VIP ≥ 1 in ≥ 80% are "Stable" |
+
+### Unsupervised Network Analysis
+
+| Method | Module | Purpose |
+|--------|--------|---------|
+| WGCNA | `wgcna.run_wgcna` | Weighted correlation network → TOM → module detection → module-trait correlation → hub identification |
 
 ## Preprocessing Pipeline
 
-1. **Drop sparse features** (>50% missing)
-2. **Half-min imputation** (MNAR-appropriate for metabolomics)
-3. **Log₂ transform** (optional, stabilises variance)
-4. **Pareto scaling** (divide by √std — balances high/low-abundance features)
+1. **Drop sparse features** — remove features with > 50% missing values
+2. **Half-min imputation** — MNAR-appropriate (assumes missingness below detection limit)
+3. **Log transform** — per-column offset for negatives/zeros, then natural log
+4. **Pareto scaling** — divide by √std (balances high/low-abundance features without compressing variance as much as z-scoring)
 
 ## Installation
 
 ```bash
-# On WSL, create venv on native filesystem (not /mnt/c/)
-python3 -m venv ~/venv
-source ~/venv/bin/activate
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+# Linux/macOS
+source venv/bin/activate
+
+pip install -e .
+```
+
+Or with pinned versions:
+
+```bash
 pip install -r requirements.txt
+pip install -e .
 ```
 
 ## Quick Start
 
 ```bash
-source ~/venv/bin/activate
 python examples/banana_workflow.py
 ```
 
-This runs all three methods on each omics layer (single-omics), then DIABLO + concatenated RF/ordinal (multi-omics), and finally identifies consensus features across methods. Results are saved to `results/`.
+This runs the full analysis pipeline:
+1. **Single-omics** (per layer): sPLS-DA, RF + SHAP, ordinal regression, stability selection, permutation testing, WGCNA
+2. **Multi-omics**: DIABLO integration, concatenated RF/ordinal baselines, DIABLO permutation testing
+3. **Consensus**: features appearing across multiple methods' top-15 lists
 
 ## Outputs
 
-The workflow generates **66 files** across these categories:
+Results are saved to `results/` with this structure:
 
-| Output | Location | Format |
-|--------|----------|--------|
-| Scores plots | `results/single_omics/<layer>/` | PNG |
-| VIP / importance bars | `results/single_omics/<layer>/` | PNG + CSV |
-| Confusion matrices | `results/single_omics/<layer>/` | PNG |
-| DIABLO multi-block scores | `results/multi_omics/` | PNG |
-| Block correlations | `results/multi_omics/` | PNG + CSV |
-| Method comparison | `results/method_comparison.csv` | CSV |
-| Consensus features | `results/consensus_features.csv` | CSV + PNG |
+```
+results/
+├── method_comparison.csv           # All methods' LOO accuracies
+├── consensus_features.csv          # Features selected by ≥ 2 methods
+├── consensus_features.png
+├── single_omics/<layer>/
+│   ├── splsda_scores.png           # sPLS-DA sample scores (2D)
+│   ├── splsda_vip.png              # VIP bar plot
+│   ├── splsda_vip_scores.csv
+│   ├── splsda_stability.csv        # Bootstrap selection frequencies
+│   ├── splsda_stability.png        # Stability bar plot
+│   ├── splsda_permutation_test.json
+│   ├── splsda_permutation_null.png # Null distribution histogram
+│   ├── rf_importance.png           # Gini importance bar plot
+│   ├── rf_feature_importance.csv
+│   ├── rf_shap_importance.csv      # Mean |SHAP| (≤ 1000 features)
+│   ├── rf_permutation_importance.csv
+│   ├── rf_confusion_matrix.png
+│   ├── ordinal_coefficients.png
+│   ├── ordinal_coefficients.csv
+│   ├── ordinal_model_comparison.csv
+│   ├── ordinal_confusion_matrix.png
+│   └── wgcna/
+│       ├── module_assignments.csv
+│       ├── module_trait_correlations.csv
+│       ├── module_trait_correlations.png
+│       └── hub_features.csv
+└── multi_omics/
+    ├── diablo_scores.png
+    ├── diablo_vip_<block>.png
+    ├── diablo_vip_scores.csv
+    ├── block_correlations.csv
+    ├── block_correlations.png
+    ├── selected_features_<block>_comp<N>.csv
+    ├── diablo_permutation_test.json
+    └── diablo_permutation_null.png
+```
 
 ## Validation
 
-sPLS-DA is validated against mixOmics R reference (run via `ML_multiomics`):
+sPLS-DA is validated against mixOmics R reference outputs:
 
 ```bash
 python tests/validate_plsda.py
 ```
 
-Results: **7/12 PASS, 5/12 WARN, 0 FAIL**. Warnings are due to expected differences (aromatics sample trimming 12→9, proteomics high dimensionality).
+Checks: Spearman rank correlation of VIP scores, top-5 feature overlap, class separation ordering. Warnings for expected differences (sample alignment, high dimensionality).
+
+## Limitations
+
+- **Small sample size** (n = 9): LOO CV is the only viable validation strategy; permutation p-values help assess significance but confidence intervals are wide.
+- **WGCNA** was designed for n ≥ 15–20; results with n = 9 should be treated as exploratory.
+- **sPLS-DA/DIABLO** implementation differs from mixOmics R (different SVD initialisation, deflation strategy) — validated to produce equivalent rankings.
 
 ## Dependencies
 
-Core: `numpy`, `pandas`, `scikit-learn`, `matplotlib`, `seaborn`, `mord`, `shap`, `umap-learn`
+Core: `numpy`, `pandas`, `scikit-learn`, `matplotlib`, `seaborn`, `mord`, `shap`, `scipy`
+
+## License
+
+Apache 2.0

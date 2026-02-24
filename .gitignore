@@ -23,3 +23,6 @@ results/
 
 # Unused data
 data/Unused/
+
+# Jupyter
+.ipynb_checkpoints/

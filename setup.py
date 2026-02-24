@@ -2,12 +2,13 @@ from setuptools import setup, find_packages
 
 setup(
     name='multiomics_integration',
-    version='0.1.0',
+    version='0.2.0',
     author='Subaru Muroi',
     author_email='k.muroi@uq.edu.au',
-    description='Consolidated multi-omics classification: sPLS-DA/DIABLO, Random Forest, Ordinal Regression.',
+    description='Multi-omics integration: sPLS-DA/DIABLO, Random Forest, Ordinal Regression, WGCNA.',
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
+    py_modules=['ingestion', 'visualization', 'utils'],
     install_requires=[
         'numpy',
         'pandas',
@@ -16,7 +17,6 @@ setup(
         'seaborn',
         'mord',
         'shap',
-        'umap-learn',
         'scipy',
     ],
     classifiers=[

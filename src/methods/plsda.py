@@ -621,3 +621,219 @@ def cross_validate_diablo(X_blocks, y, n_components=2, keepX=None, design=0.1, c
     
     acc = accuracy_score(y, predictions)
     return {"accuracy": acc, "predictions": predictions, "true_labels": y}
+
+
+# ---------------------------------------------------------------------------
+# Permutation testing
+# ---------------------------------------------------------------------------
+
+def _early_stop_check(null_accs_so_far, true_acc, n_done, n_max, alpha=0.05, confidence=0.99):
+    """Check whether we can stop permutation testing early.
+    
+    Uses a sequential decision rule: after n_done permutations, compute a 
+    confidence interval for the true p-value using the Clopper-Pearson 
+    (exact binomial) interval. If the entire interval is above or below alpha,
+    the conclusion won't change with more permutations.
+    
+    Parameters
+    ----------
+    null_accs_so_far : ndarray of null accuracies collected so far
+    true_acc : float — observed accuracy
+    n_done : int — permutations completed
+    alpha : float — significance threshold (default 0.05)
+    confidence : float — confidence level for the decision (default 0.99)
+    
+    Returns
+    -------
+    bool — True if we can stop early
+    """
+    from scipy.stats import beta as beta_dist
+    
+    k = np.sum(null_accs_so_far[:n_done] >= true_acc)  # successes
+    
+    # Clopper-Pearson interval for p-value
+    tail = (1 - confidence) / 2
+    if k == 0:
+        p_lower = 0.0
+    else:
+        p_lower = beta_dist.ppf(tail, k, n_done - k + 1)
+    
+    if k == n_done:
+        p_upper = 1.0
+    else:
+        p_upper = beta_dist.ppf(1 - tail, k + 1, n_done - k)
+    
+    # Can stop if entire CI is on one side of alpha
+    if p_lower > alpha:  # clearly non-significant
+        return True
+    if p_upper < alpha:  # clearly significant
+        return True
+    return False
+
+
+def permutation_test_splsda(X, y, n_components=2, keepX=None, n_permutations=1000,
+                             random_state=42, early_stop=True, min_perms=50, check_every=25):
+    """Permutation test for sPLS-DA: is LOO accuracy better than chance?
+    
+    Shuffles class labels n_permutations times, computes LOO accuracy each time
+    to build a null distribution. With early_stop=True, checks periodically and
+    stops when the significance conclusion is already clear.
+    
+    Parameters
+    ----------
+    X : ndarray (n_samples, n_features)
+    y : ndarray of class labels
+    n_components : int
+    keepX : int or list, optional
+    n_permutations : int — maximum permutations
+    random_state : int
+    early_stop : bool — enable dynamic stopping (default True)
+    min_perms : int — minimum permutations before early stopping kicks in
+    check_every : int — check stopping criterion every N permutations
+    
+    Returns
+    -------
+    dict with 'true_accuracy', 'null_distribution', 'p_value', 'mean_null',
+              'std_null', 'n_permutations_run', 'stopped_early'
+    """
+    rng = np.random.RandomState(random_state)
+    
+    true_result = cross_validate_splsda(X, y, n_components=n_components, keepX=keepX)
+    true_acc = true_result["accuracy"]
+    
+    null_accs = np.zeros(n_permutations)
+    n_run = 0
+    stopped_early = False
+    
+    for i in range(n_permutations):
+        y_perm = rng.permutation(y)
+        perm_result = cross_validate_splsda(X, y_perm, n_components=n_components, keepX=keepX)
+        null_accs[i] = perm_result["accuracy"]
+        n_run = i + 1
+        
+        # Early stopping check
+        if early_stop and n_run >= min_perms and n_run % check_every == 0:
+            if _early_stop_check(null_accs, true_acc, n_run, n_permutations):
+                stopped_early = True
+                break
+    
+    null_accs = null_accs[:n_run]
+    p_value = (np.sum(null_accs >= true_acc) + 1) / (n_run + 1)
+    
+    return {
+        "true_accuracy": true_acc,
+        "null_distribution": null_accs,
+        "p_value": p_value,
+        "mean_null": null_accs.mean(),
+        "std_null": null_accs.std(),
+        "n_permutations_run": n_run,
+        "stopped_early": stopped_early,
+    }
+
+
+def permutation_test_diablo(X_blocks, y, n_components=2, keepX=None, design=0.1,
+                             n_permutations=1000, random_state=42,
+                             early_stop=True, min_perms=50, check_every=25):
+    """Permutation test for DIABLO with optional early stopping."""
+    rng = np.random.RandomState(random_state)
+    
+    true_result = cross_validate_diablo(X_blocks, y, n_components=n_components,
+                                         keepX=keepX, design=design)
+    true_acc = true_result["accuracy"]
+    
+    null_accs = np.zeros(n_permutations)
+    n_run = 0
+    stopped_early = False
+    
+    for i in range(n_permutations):
+        y_perm = rng.permutation(y)
+        perm_result = cross_validate_diablo(X_blocks, y_perm, n_components=n_components,
+                                             keepX=keepX, design=design)
+        null_accs[i] = perm_result["accuracy"]
+        n_run = i + 1
+        
+        if early_stop and n_run >= min_perms and n_run % check_every == 0:
+            if _early_stop_check(null_accs, true_acc, n_run, n_permutations):
+                stopped_early = True
+                break
+    
+    null_accs = null_accs[:n_run]
+    p_value = (np.sum(null_accs >= true_acc) + 1) / (n_run + 1)
+    
+    return {
+        "true_accuracy": true_acc,
+        "null_distribution": null_accs,
+        "p_value": p_value,
+        "mean_null": null_accs.mean(),
+        "std_null": null_accs.std(),
+        "n_permutations_run": n_run,
+        "stopped_early": stopped_early,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Stability selection (bootstrap)
+# ---------------------------------------------------------------------------
+
+def stability_selection_splsda(X, y, feature_names=None, n_components=2, keepX=None,
+                                n_bootstrap=100, random_state=42):
+    """Bootstrap stability selection for sPLS-DA feature selection.
+    
+    Fits sPLS-DA on n_bootstrap resampled datasets and records which features
+    are selected (VIP >= 1) in each run. Features selected in a high fraction
+    of bootstraps are genuinely stable.
+    
+    Parameters
+    ----------
+    X : ndarray (n_samples, n_features)
+    y : ndarray of class labels
+    feature_names : list of str
+    n_components : int
+    keepX : int or list, optional
+    n_bootstrap : int
+    random_state : int
+    
+    Returns
+    -------
+    DataFrame with Feature, selection_frequency, mean_vip, std_vip, stable (freq >= 0.8)
+    """
+    rng = np.random.RandomState(random_state)
+    n = X.shape[0]
+    p = X.shape[1]
+    names = feature_names or [f"f{i}" for i in range(p)]
+    
+    selection_counts = np.zeros(p)
+    vip_accumulator = np.zeros((n_bootstrap, p))
+    
+    for b in range(n_bootstrap):
+        # Stratified bootstrap: resample within each class
+        idx = []
+        for cls in np.unique(y):
+            cls_idx = np.where(y == cls)[0]
+            boot_idx = rng.choice(cls_idx, size=len(cls_idx), replace=True)
+            idx.extend(boot_idx)
+        idx = np.array(idx)
+        
+        X_boot = X[idx]
+        y_boot = y[idx]
+        
+        model = SPLSDA(n_components=n_components, keepX=keepX)
+        model.fit(X_boot, y_boot, feature_names=names)
+        
+        vip = model.vip_
+        vip_accumulator[b, :] = vip
+        selection_counts[vip >= 1.0] += 1
+    
+    freq = selection_counts / n_bootstrap
+    mean_vip = vip_accumulator.mean(axis=0)
+    std_vip = vip_accumulator.std(axis=0)
+    
+    df = pd.DataFrame({
+        "Feature": names,
+        "Selection_Frequency": freq,
+        "Mean_VIP": mean_vip,
+        "Std_VIP": std_vip,
+        "Stable": freq >= 0.8,
+    }).sort_values("Selection_Frequency", ascending=False).reset_index(drop=True)
+    
+    return df

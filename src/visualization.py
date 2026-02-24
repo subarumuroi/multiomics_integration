@@ -200,3 +200,87 @@ def plot_consensus_features(consensus_df, title="Consensus Features", save_path=
     if save_path:
         save_fig(fig, save_path)
     return fig, ax
+
+
+# ---------------------------------------------------------------------------
+# Stability selection
+# ---------------------------------------------------------------------------
+
+def plot_stability(stability_df, top_n=20, title="Stability Selection", ax=None, save_path=None):
+    """Bar plot of feature selection frequency from bootstrap stability."""
+    df = stability_df.head(top_n).copy()
+    
+    if ax is None:
+        fig, ax = _setup_figure(figsize=(8, max(4, top_n * 0.35)))
+    else:
+        fig = ax.get_figure()
+    
+    colors = ["#2ca02c" if s else "#aec7e8" for s in df["Stable"]]
+    ax.barh(range(len(df)), df["Selection_Frequency"], color=colors,
+            edgecolor="black", linewidth=0.5)
+    ax.set_yticks(range(len(df)))
+    ax.set_yticklabels(df["Feature"], fontsize=8)
+    ax.invert_yaxis()
+    ax.axvline(0.8, color="red", linestyle="--", linewidth=1, label="Stable (0.8)")
+    ax.set_xlabel("Bootstrap Selection Frequency")
+    ax.set_title(title)
+    ax.legend()
+    
+    if save_path:
+        save_fig(fig, save_path)
+    return fig, ax
+
+
+# ---------------------------------------------------------------------------
+# Permutation test
+# ---------------------------------------------------------------------------
+
+def plot_permutation_null(perm_result, title="Permutation Test", save_path=None):
+    """Histogram of null distribution with true accuracy marked."""
+    fig, ax = _setup_figure()
+    
+    ax.hist(perm_result["null_distribution"], bins=30, color="#aec7e8",
+            edgecolor="black", linewidth=0.5, density=True, label="Null distribution")
+    ax.axvline(perm_result["true_accuracy"], color="red", linewidth=2,
+               linestyle="--", label=f"True accuracy ({perm_result['true_accuracy']:.3f})")
+    ax.set_xlabel("Accuracy")
+    ax.set_ylabel("Density")
+    ax.set_title(f"{title}\np = {perm_result['p_value']:.4f}")
+    ax.legend()
+    
+    if save_path:
+        save_fig(fig, save_path)
+    return fig, ax
+
+
+# ---------------------------------------------------------------------------
+# WGCNA
+# ---------------------------------------------------------------------------
+
+def plot_module_trait(module_trait_df, title="Module-Trait Correlations", save_path=None):
+    """Heatmap-style bar plot of module-trait correlations."""
+    if module_trait_df.empty:
+        return None, None
+    
+    fig, ax = _setup_figure(figsize=(8, max(3, len(module_trait_df) * 0.5)))
+    
+    colors = ["#d62728" if p < 0.05 else "#aec7e8" for p in module_trait_df["P_Value"]]
+    bars = ax.barh(range(len(module_trait_df)), module_trait_df["Correlation"],
+                   color=colors, edgecolor="black", linewidth=0.5)
+    ax.set_yticks(range(len(module_trait_df)))
+    labels = [f"Module {int(m)} ({n} feat)" 
+              for m, n in zip(module_trait_df["Module"], module_trait_df["N_Features"])]
+    ax.set_yticklabels(labels, fontsize=9)
+    ax.invert_yaxis()
+    ax.axvline(0, color="gray", linewidth=0.5)
+    ax.set_xlabel("Correlation with Ripening Stage")
+    ax.set_title(title)
+    
+    # Add p-value annotations
+    for i, (_, row) in enumerate(module_trait_df.iterrows()):
+        ax.text(row["Correlation"] + 0.02 * np.sign(row["Correlation"]),
+                i, f"p={row['P_Value']:.3f}", va="center", fontsize=8)
+    
+    if save_path:
+        save_fig(fig, save_path)
+    return fig, ax

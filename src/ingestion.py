@@ -99,7 +99,10 @@ def impute_group_median(df: pd.DataFrame, group_col: str = "Groups") -> pd.DataF
 
 
 def log_transform(X: np.ndarray, base: str = "log") -> np.ndarray:
-    """Log-transform with small offset to handle zeros.
+    """Log-transform with small offset to handle zeros and negatives.
+    
+    For each column containing non-positive values, shifts the ENTIRE column
+    by |col_min| + 1 so all values become positive before log transform.
     
     Parameters
     ----------
@@ -107,8 +110,10 @@ def log_transform(X: np.ndarray, base: str = "log") -> np.ndarray:
     base : str
         'log' for natural log, 'log2', 'log10'
     """
-    offset = np.where(X <= 0, np.abs(X.min(axis=0, keepdims=True)) + 1, 0)
-    X_pos = X + offset + 1e-10
+    col_min = X.min(axis=0)
+    # Per-column offset: shift entire column when any value is non-positive
+    offset = np.where(col_min <= 0, np.abs(col_min) + 1, 0)
+    X_pos = X + offset[np.newaxis, :] + 1e-10
     if base == "log2":
         return np.log2(X_pos)
     elif base == "log10":

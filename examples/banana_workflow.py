@@ -21,12 +21,17 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from ingestion import load_all_layers, prepare_block, prepare_multiblock, encode_ordinal
-from methods.plsda import SPLSDA, DIABLO, cross_validate_splsda, cross_validate_diablo
+from methods.plsda import (
+    SPLSDA, DIABLO, cross_validate_splsda, cross_validate_diablo,
+    permutation_test_splsda, permutation_test_diablo, stability_selection_splsda,
+)
 from methods.random_forest import train_rf, cross_validate_rf, compute_shap_values, compute_permutation_importance
 from methods.ordinal import cross_validate_ordinal, compare_ordinal_models, get_coefficient_df
+from methods.wgcna import run_wgcna
 from visualization import (
     plot_scores, plot_vip, plot_importance, plot_confusion_matrix,
-    plot_diablo_scores, plot_block_correlations, plot_consensus_features, save_fig,
+    plot_diablo_scores, plot_block_correlations, plot_consensus_features,
+    plot_stability, plot_permutation_null, plot_module_trait, save_fig,
 )
 from utils import create_results_dir, save_csv, save_json, find_consensus_features
 
@@ -124,6 +129,55 @@ def run_single_omics(blocks, results_dir):
                              "MAE": cv_ord["mae"], "Type": "Single"})
         
         all_importance[f"{layer_name}_ordinal"] = coef_df.rename(columns={"Abs_Coefficient": "Score"})[["Feature", "Score"]]
+        
+        # --- Stability Selection for sPLS-DA ---
+        print("  Running sPLS-DA stability selection (100 bootstraps)...")
+        stability_df = stability_selection_splsda(X, y, feature_names=feature_names,
+                                                   n_components=2, n_bootstrap=100)
+        save_csv(stability_df, layer_dir / "splsda_stability.csv")
+        plot_stability(stability_df, top_n=20, title=f"Stability Selection: {layer_name}",
+                       save_path=layer_dir / "splsda_stability.png")
+        n_stable = stability_df["Stable"].sum()
+        print(f"  Stable features (freq >= 0.8): {n_stable}/{len(stability_df)}")
+        
+        # --- Permutation Test for sPLS-DA ---
+        print("  Running sPLS-DA permutation test (up to 200 perms, early stopping)...")
+        perm_result = permutation_test_splsda(X, y, n_components=2, n_permutations=200,
+                                               early_stop=True, min_perms=50, check_every=25)
+        save_json({
+            "true_accuracy": perm_result["true_accuracy"],
+            "p_value": perm_result["p_value"],
+            "mean_null": perm_result["mean_null"],
+            "std_null": perm_result["std_null"],
+            "n_permutations_run": perm_result["n_permutations_run"],
+            "stopped_early": perm_result["stopped_early"],
+        }, layer_dir / "splsda_permutation_test.json")
+        plot_permutation_null(perm_result, title=f"sPLS-DA Permutation: {layer_name}",
+                              save_path=layer_dir / "splsda_permutation_null.png")
+        early_note = f" (stopped early at {perm_result['n_permutations_run']})" if perm_result["stopped_early"] else ""
+        print(f"  sPLS-DA permutation p-value: {perm_result['p_value']:.4f}{early_note}")
+        
+        # --- WGCNA ---
+        print(f"  Running WGCNA (n={X.shape[0]}, p={X.shape[1]})...")
+        wgcna_result = run_wgcna(X, y_enc, feature_names=feature_names, corr_method="spearman")
+        
+        wgcna_dir = layer_dir / "wgcna"
+        wgcna_dir.mkdir(parents=True, exist_ok=True)
+        save_csv(wgcna_result["modules"], wgcna_dir / "module_assignments.csv")
+        save_csv(wgcna_result["module_trait"], wgcna_dir / "module_trait_correlations.csv")
+        if not wgcna_result["module_trait"].empty:
+            plot_module_trait(wgcna_result["module_trait"],
+                             title=f"Module-Trait: {layer_name}",
+                             save_path=wgcna_dir / "module_trait_correlations.png")
+        if not wgcna_result["hubs"].empty:
+            save_csv(wgcna_result["hubs"], wgcna_dir / "hub_features.csv")
+            hub_features = wgcna_result["hubs"][wgcna_result["hubs"]["Is_Hub"]]
+            print(f"  WGCNA: {len(set(wgcna_result['modules']['Module']) - {0})} modules, "
+                  f"{len(hub_features)} hub features")
+            if not wgcna_result["module_trait"].empty:
+                top_mod = wgcna_result["module_trait"].iloc[0]
+                print(f"  Top module-trait: Module {int(top_mod['Module'])} "
+                      f"(r={top_mod['Correlation']:.3f}, p={top_mod['P_Value']:.4f})")
     
     return summary_rows, all_importance
 
@@ -185,9 +239,6 @@ def run_multi_omics(blocks, results_dir):
     # Also run RF on concatenated (early fusion baseline)
     print("  Running concatenated RF (early fusion baseline)...")
     X_concat = np.hstack([X_blocks[name] for name in diablo.block_names_])
-    concat_names = []
-    for name in diablo.block_names_:
-        concat_names.extend([f"{name}:{f}" for f in feature_names[name]])
     
     cv_concat = cross_validate_rf(X_concat, y)
     print(f"  Concatenated RF LOO accuracy: {cv_concat['accuracy']:.3f}")
@@ -198,8 +249,27 @@ def run_multi_omics(blocks, results_dir):
     cv_ord_multi = cross_validate_ordinal(X_concat, y_enc)
     print(f"  Concatenated ordinal LOO accuracy: {cv_ord_multi['accuracy']:.3f}, MAE: {cv_ord_multi['mae']:.3f}")
     
+    # --- DIABLO Permutation Test ---
+    print("  Running DIABLO permutation test (up to 200 perms, early stopping)...")
+    perm_diablo = permutation_test_diablo(X_blocks, y, n_components=2, keepX=keepX,
+                                           design=0.1, n_permutations=200,
+                                           early_stop=True, min_perms=50, check_every=25)
+    save_json({
+        "true_accuracy": perm_diablo["true_accuracy"],
+        "p_value": perm_diablo["p_value"],
+        "mean_null": perm_diablo["mean_null"],
+        "std_null": perm_diablo["std_null"],
+        "n_permutations_run": perm_diablo["n_permutations_run"],
+        "stopped_early": perm_diablo["stopped_early"],
+    }, multi_dir / "diablo_permutation_test.json")
+    plot_permutation_null(perm_diablo, title="DIABLO Permutation Test",
+                          save_path=multi_dir / "diablo_permutation_null.png")
+    early_note = f" (stopped early at {perm_diablo['n_permutations_run']})" if perm_diablo["stopped_early"] else ""
+    print(f"  DIABLO permutation p-value: {perm_diablo['p_value']:.4f}{early_note}")
+    
     summary_rows = [
-        {"Layer": "all", "Method": "DIABLO", "Accuracy": cv_diablo["accuracy"], "Type": "Joint Integration"},
+        {"Layer": "all", "Method": "DIABLO", "Accuracy": cv_diablo["accuracy"],
+         "Perm_P_Value": perm_diablo["p_value"], "Type": "Joint Integration"},
         {"Layer": "all", "Method": "Concat-RF", "Accuracy": cv_concat["accuracy"], "Type": "Early Fusion"},
         {"Layer": "all", "Method": "Concat-Ordinal", "Accuracy": cv_ord_multi["accuracy"], 
          "MAE": cv_ord_multi["mae"], "Type": "Early Fusion"},
