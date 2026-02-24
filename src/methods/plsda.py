@@ -570,11 +570,7 @@ class DIABLO:
         vip = self.block_vip_[block_name]
         names = self.feature_names_.get(block_name) or [f"f{i}" for i in range(len(vip))]
         df = pd.DataFrame({"Feature": names, "VIP": vip, "Block": block_name})
-        n = len(vip)
-        # Percentile ranking within block
-        ranks = pd.Series(vip).rank(pct=True) * 100
-        df["Percentile"] = ranks.values
-        df["Important"] = df["Percentile"] >= 50
+        df["Important"] = df["VIP"] >= 1.0
         return df.sort_values("VIP", ascending=False).reset_index(drop=True)
     
     def get_all_vip_df(self):
