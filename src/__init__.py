@@ -6,7 +6,8 @@ from .ingestion import (
 )
 from .methods.plsda import (
     SPLSDA, DIABLO, cross_validate_splsda, cross_validate_diablo,
-    permutation_test_splsda, permutation_test_diablo, stability_selection_splsda,
+    permutation_test_splsda, permutation_test_diablo,
+    stability_selection_splsda, stability_selection_diablo,
 )
 from .methods.random_forest import (
     train_rf, cross_validate_rf, compute_shap_values,

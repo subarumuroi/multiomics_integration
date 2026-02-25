@@ -23,7 +23,8 @@ sys.path.insert(0, str(ROOT / "src"))
 from ingestion import load_all_layers, prepare_block, prepare_multiblock, encode_ordinal
 from methods.plsda import (
     SPLSDA, DIABLO, cross_validate_splsda, cross_validate_diablo,
-    permutation_test_splsda, permutation_test_diablo, stability_selection_splsda,
+    permutation_test_splsda, permutation_test_diablo,
+    stability_selection_splsda, stability_selection_diablo,
 )
 from methods.random_forest import train_rf, cross_validate_rf, compute_shap_values, compute_permutation_importance
 from methods.ordinal import cross_validate_ordinal, compare_ordinal_models, get_coefficient_df
@@ -31,7 +32,8 @@ from methods.wgcna import run_wgcna
 from visualization import (
     plot_scores, plot_vip, plot_importance, plot_confusion_matrix,
     plot_diablo_scores, plot_block_correlations, plot_consensus_features,
-    plot_stability, plot_permutation_null, plot_module_trait, save_fig,
+    plot_stability, plot_permutation_null, plot_module_trait,
+    plot_convergence_grid, save_fig,
 )
 from utils import create_results_dir, save_csv, save_json, find_consensus_features
 
@@ -280,6 +282,19 @@ def run_multi_omics(blocks, results_dir):
         vip_df = diablo.get_vip_df(name)
         importance_dfs[f"diablo_{name}"] = vip_df.rename(columns={"VIP": "Score"})[["Feature", "Score"]]
     
+    # --- DIABLO Stability Selection ---
+    print("  Running DIABLO stability selection (100 bootstraps)...")
+    diablo_stab = stability_selection_diablo(
+        X_blocks, y, feature_names=feature_names,
+        n_components=2, keepX=keepX, design=0.1, n_bootstrap=100,
+    )
+    for name, sdf in diablo_stab.items():
+        save_csv(sdf, multi_dir / f"diablo_stability_{name}.csv")
+        plot_stability(sdf, top_n=20, title=f"DIABLO Stability: {name}",
+                       save_path=multi_dir / f"diablo_stability_{name}.png")
+        n_stable = sdf["Stable"].sum()
+        print(f"    {name}: {n_stable}/{len(sdf)} stable features")
+    
     return summary_rows, importance_dfs
 
 
@@ -310,6 +325,30 @@ def main():
         plot_consensus_features(consensus, save_path=RESULTS_DIR / "consensus_features.png")
         print(f"\nConsensus features (top across methods):")
         print(consensus.to_string(index=False))
+
+        # Method convergence grid (3/4 and 4/4 features)
+        print("\n  Generating method convergence grid...")
+        splsda_stability_map = {}
+        for layer_name in blocks:
+            stab_path = RESULTS_DIR / "single_omics" / layer_name / "splsda_stability.csv"
+            if stab_path.exists():
+                stab_df = pd.read_csv(stab_path)
+                for _, sr in stab_df.iterrows():
+                    splsda_stability_map[sr["Feature"]] = sr["Selection_Frequency"]
+        diablo_stability_map = {}
+        for layer_name in blocks:
+            stab_path = RESULTS_DIR / "multi_omics" / f"diablo_stability_{layer_name}.csv"
+            if stab_path.exists():
+                stab_df = pd.read_csv(stab_path)
+                for _, sr in stab_df.iterrows():
+                    diablo_stability_map[sr["Feature"]] = sr["Selection_Frequency"]
+        plot_convergence_grid(
+            consensus,
+            splsda_stability_map=splsda_stability_map,
+            diablo_stability_map=diablo_stability_map,
+            save_path=RESULTS_DIR / "multi_omics" / "method_convergence_grid.png",
+        )
+        print("  Saved method_convergence_grid.png + .svg")
     
     print(f"\nAll results saved to: {RESULTS_DIR}")
     print("Done.")

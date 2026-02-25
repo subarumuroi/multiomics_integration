@@ -833,3 +833,77 @@ def stability_selection_splsda(X, y, feature_names=None, n_components=2, keepX=N
     }).sort_values("Selection_Frequency", ascending=False).reset_index(drop=True)
     
     return df
+
+
+def stability_selection_diablo(X_blocks, y, feature_names=None, n_components=2,
+                                keepX=None, design=0.1, n_bootstrap=100,
+                                random_state=42):
+    """Bootstrap stability selection for DIABLO feature selection.
+
+    Fits the multi-block sPLS-DA (DIABLO) model on *n_bootstrap* stratified
+    bootstrap resamples and records, for each omics block, which features are
+    selected (VIP >= 1) in each run.
+
+    Parameters
+    ----------
+    X_blocks : dict of {block_name: ndarray (n_samples, p_k)}
+    y : ndarray of class labels
+    feature_names : dict of {block_name: list of str}, optional
+    n_components : int
+    keepX : dict of {block_name: list of int}, optional
+    design : float
+    n_bootstrap : int
+    random_state : int
+
+    Returns
+    -------
+    dict of {block_name: DataFrame} with columns
+        Feature, Selection_Frequency, Mean_VIP, Std_VIP, Stable.
+    """
+    rng = np.random.RandomState(random_state)
+    block_names = list(X_blocks.keys())
+    n = len(y)
+
+    # Resolve feature names
+    if feature_names is None:
+        feature_names = {name: [f"{name}_f{i}" for i in range(X_blocks[name].shape[1])]
+                         for name in block_names}
+
+    # Accumulators per block
+    counts = {name: np.zeros(X_blocks[name].shape[1]) for name in block_names}
+    vips = {name: np.zeros((n_bootstrap, X_blocks[name].shape[1])) for name in block_names}
+
+    for b in range(n_bootstrap):
+        # Stratified bootstrap
+        idx = []
+        for cls in np.unique(y):
+            cls_idx = np.where(y == cls)[0]
+            boot_idx = rng.choice(cls_idx, size=len(cls_idx), replace=True)
+            idx.extend(boot_idx)
+        idx = np.array(idx)
+
+        X_boot = {name: X_blocks[name][idx] for name in block_names}
+        y_boot = y[idx]
+
+        model = DIABLO(n_components=n_components, keepX=keepX, design=design)
+        model.fit(X_boot, y_boot, feature_names=feature_names)
+
+        for name in block_names:
+            vip = model.block_vip_[name]
+            vips[name][b, :] = vip
+            counts[name][vip >= 1.0] += 1
+
+    results = {}
+    for name in block_names:
+        freq = counts[name] / n_bootstrap
+        mean_vip = vips[name].mean(axis=0)
+        std_vip = vips[name].std(axis=0)
+        results[name] = pd.DataFrame({
+            "Feature": feature_names[name],
+            "Selection_Frequency": freq,
+            "Mean_VIP": mean_vip,
+            "Std_VIP": std_vip,
+            "Stable": freq >= 0.8,
+        }).sort_values("Selection_Frequency", ascending=False).reset_index(drop=True)
+
+    return results
