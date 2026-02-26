@@ -9,7 +9,7 @@ import pandas as pd
 import mord
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import LeaveOneOut, StratifiedKFold
-from sklearn.metrics import accuracy_score, mean_absolute_error, confusion_matrix, classification_report
+from sklearn.metrics import accuracy_score, mean_absolute_error, confusion_matrix
 from sklearn.pipeline import Pipeline
 
 
@@ -117,3 +117,79 @@ def compare_ordinal_models(X, y_encoded, feature_names=None, cv=None):
             "MAE": cv_result["mae"],
         })
     return pd.DataFrame(results)
+
+
+# ---------------------------------------------------------------------------
+# Permutation test
+# ---------------------------------------------------------------------------
+
+def _early_stop_check_ord(null_accs_so_far, true_acc, n_done, alpha=0.05, confidence=0.99):
+    """Sequential stopping rule using Clopper-Pearson CI for the p-value."""
+    from scipy.stats import beta as beta_dist
+
+    k = int(np.sum(null_accs_so_far[:n_done] >= true_acc))
+    tail = (1 - confidence) / 2
+
+    p_lower = 0.0 if k == 0 else beta_dist.ppf(tail, k, n_done - k + 1)
+    p_upper = 1.0 if k == n_done else beta_dist.ppf(1 - tail, k + 1, n_done - k)
+
+    return p_lower > alpha or p_upper < alpha
+
+
+def permutation_test_ordinal(X, y_encoded, model_type="AT", alpha=1.0,
+                              n_permutations=200, random_state=42,
+                              early_stop=True, min_perms=50, check_every=25):
+    """Permutation test for ordinal regression: is LOO accuracy better than chance?
+
+    Shuffles ordinal labels *n_permutations* times and computes LOO accuracy
+    for each shuffle to build a null distribution.
+
+    Parameters
+    ----------
+    X : ndarray (n_samples, n_features)
+    y_encoded : ndarray of ordinal integers (0, 1, 2, ...)
+    model_type : str — 'AT', 'IT', or 'SE'
+    alpha : float — regularization parameter
+    n_permutations : int — maximum permutations
+    random_state : int
+    early_stop : bool — enable dynamic stopping (default True)
+    min_perms : int — minimum permutations before early stopping kicks in
+    check_every : int — check stopping criterion every N permutations
+
+    Returns
+    -------
+    dict with 'true_accuracy', 'null_distribution', 'p_value', 'mean_null',
+              'std_null', 'n_permutations_run', 'stopped_early'
+    """
+    rng = np.random.RandomState(random_state)
+
+    true_result = cross_validate_ordinal(X, y_encoded, model_type=model_type, alpha=alpha)
+    true_acc = true_result["accuracy"]
+
+    null_accs = np.zeros(n_permutations)
+    n_run = 0
+    stopped_early = False
+
+    for i in range(n_permutations):
+        y_perm = rng.permutation(y_encoded)
+        perm_result = cross_validate_ordinal(X, y_perm, model_type=model_type, alpha=alpha)
+        null_accs[i] = perm_result["accuracy"]
+        n_run = i + 1
+
+        if early_stop and n_run >= min_perms and n_run % check_every == 0:
+            if _early_stop_check_ord(null_accs, true_acc, n_run):
+                stopped_early = True
+                break
+
+    null_accs = null_accs[:n_run]
+    p_value = (np.sum(null_accs >= true_acc) + 1) / (n_run + 1)
+
+    return {
+        "true_accuracy": true_acc,
+        "null_distribution": null_accs,
+        "p_value": p_value,
+        "mean_null": null_accs.mean(),
+        "std_null": null_accs.std(),
+        "n_permutations_run": n_run,
+        "stopped_early": stopped_early,
+    }

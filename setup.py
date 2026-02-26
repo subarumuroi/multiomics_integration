@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='multiomics_integration',
-    version='0.2.0',
+    version='0.3.0',
     author='Subaru Muroi',
     author_email='k.muroi@uq.edu.au',
     description='Multi-omics integration: sPLS-DA/DIABLO, Random Forest, Ordinal Regression, WGCNA.',

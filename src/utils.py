@@ -39,6 +39,16 @@ def save_json(data, path):
 def find_consensus_features(importance_dfs: dict, top_n: int = 15) -> pd.DataFrame:
     """Identify features appearing across multiple methods' top-N lists.
     
+    Uses rank-based ensemble feature selection: each method contributes its
+    top-N features, and consensus is determined by vote count.  This avoids
+    direct comparison of incompatible score magnitudes (VIP, Gini, coefficients)
+    and instead asks whether a feature is robustly identified regardless of the
+    analytic assumptions.
+    
+    Note: sPLS-DA and DIABLO share PLS lineage, so 4/4 agreement effectively
+    represents 3 independent method families (PLS, tree-based, parametric linear)
+    plus one multi-block variant.
+    
     Parameters
     ----------
     importance_dfs : dict of {method_name: DataFrame with 'Feature' column}

@@ -775,9 +775,13 @@ def stability_selection_splsda(X, y, feature_names=None, n_components=2, keepX=N
                                 n_bootstrap=100, random_state=42):
     """Bootstrap stability selection for sPLS-DA feature selection.
     
-    Fits sPLS-DA on n_bootstrap resampled datasets and records which features
-    are selected (VIP >= 1) in each run. Features selected in a high fraction
-    of bootstraps are genuinely stable.
+    Fits sparse PLS-DA on n_bootstrap resampled datasets and records which
+    features receive non-zero sparse weights in each run.  Features selected
+    in a high fraction of bootstraps are genuinely stable.
+    
+    When *keepX* is ``None`` (no sparsity), falls back to VIP >= 1 as the
+    selection criterion, but **sparse keepX should always be provided** for
+    meaningful stability results.
     
     Parameters
     ----------
@@ -786,17 +790,22 @@ def stability_selection_splsda(X, y, feature_names=None, n_components=2, keepX=N
     feature_names : list of str
     n_components : int
     keepX : int or list, optional
+        Number of features to retain per component.  **Should be provided**
+        so that the model is truly sparse.
     n_bootstrap : int
     random_state : int
     
     Returns
     -------
-    DataFrame with Feature, selection_frequency, mean_vip, std_vip, stable (freq >= 0.8)
+    DataFrame with Feature, Selection_Frequency, Mean_VIP, Std_VIP, Stable (freq >= 0.8)
     """
     rng = np.random.RandomState(random_state)
     n = X.shape[0]
     p = X.shape[1]
     names = feature_names or [f"f{i}" for i in range(p)]
+    
+    # Determine whether the model is truly sparse
+    _sparse = keepX is not None
     
     selection_counts = np.zeros(p)
     vip_accumulator = np.zeros((n_bootstrap, p))
@@ -818,7 +827,14 @@ def stability_selection_splsda(X, y, feature_names=None, n_components=2, keepX=N
         
         vip = model.vip_
         vip_accumulator[b, :] = vip
-        selection_counts[vip >= 1.0] += 1
+        
+        if _sparse:
+            # True sparse criterion: feature has non-zero weight on any component
+            selected = np.any(model.x_weights_ != 0, axis=1)
+            selection_counts[selected] += 1
+        else:
+            # Fallback for non-sparse models
+            selection_counts[vip >= 1.0] += 1
     
     freq = selection_counts / n_bootstrap
     mean_vip = vip_accumulator.mean(axis=0)
@@ -841,8 +857,11 @@ def stability_selection_diablo(X_blocks, y, feature_names=None, n_components=2,
     """Bootstrap stability selection for DIABLO feature selection.
 
     Fits the multi-block sPLS-DA (DIABLO) model on *n_bootstrap* stratified
-    bootstrap resamples and records, for each omics block, which features are
-    selected (VIP >= 1) in each run.
+    bootstrap resamples and records, for each omics block, which features
+    receive non-zero sparse weights in each run.
+
+    When *keepX* is ``None`` (no sparsity), falls back to VIP >= 1 as the
+    selection criterion.
 
     Parameters
     ----------
@@ -863,6 +882,9 @@ def stability_selection_diablo(X_blocks, y, feature_names=None, n_components=2,
     rng = np.random.RandomState(random_state)
     block_names = list(X_blocks.keys())
     n = len(y)
+    
+    # Determine whether model is truly sparse
+    _sparse = keepX is not None
 
     # Resolve feature names
     if feature_names is None:
@@ -891,7 +913,13 @@ def stability_selection_diablo(X_blocks, y, feature_names=None, n_components=2,
         for name in block_names:
             vip = model.block_vip_[name]
             vips[name][b, :] = vip
-            counts[name][vip >= 1.0] += 1
+            if _sparse:
+                # True sparse criterion: non-zero weight on any component
+                weights = model.block_weights_[name]
+                selected = np.any(weights != 0, axis=1)
+                counts[name][selected] += 1
+            else:
+                counts[name][vip >= 1.0] += 1
 
     results = {}
     for name in block_names:

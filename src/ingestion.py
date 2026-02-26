@@ -277,7 +277,3 @@ def encode_ordinal(y: np.ndarray) -> np.ndarray:
     """Encode labels preserving biological order: Green=0, Ripe=1, Overripe=2."""
     return np.array([ORDINAL_MAP[label] for label in y])
 
-def decode_ordinal(y_enc: np.ndarray) -> np.ndarray:
-    """Decode ordinal integers back to string labels."""
-    inv_map = {v: k for k, v in ORDINAL_MAP.items()}
-    return np.array([inv_map[val] for val in y_enc])

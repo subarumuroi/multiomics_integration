@@ -26,14 +26,14 @@ from methods.plsda import (
     permutation_test_splsda, permutation_test_diablo,
     stability_selection_splsda, stability_selection_diablo,
 )
-from methods.random_forest import train_rf, cross_validate_rf, compute_shap_values, compute_permutation_importance
-from methods.ordinal import cross_validate_ordinal, compare_ordinal_models, get_coefficient_df
+from methods.random_forest import train_rf, cross_validate_rf, compute_shap_values, compute_permutation_importance, permutation_test_rf
+from methods.ordinal import cross_validate_ordinal, compare_ordinal_models, get_coefficient_df, permutation_test_ordinal
 from methods.wgcna import run_wgcna
 from visualization import (
     plot_scores, plot_vip, plot_importance, plot_confusion_matrix,
     plot_diablo_scores, plot_block_correlations, plot_consensus_features,
     plot_stability, plot_permutation_null, plot_module_trait,
-    plot_convergence_grid, save_fig,
+    plot_convergence_grid,
 )
 from utils import create_results_dir, save_csv, save_json, find_consensus_features
 
@@ -61,9 +61,10 @@ def run_single_omics(blocks, results_dir):
         
         print(f"  Samples: {X.shape[0]}, Features: {X.shape[1]}")
         
-        # --- sPLS-DA ---
-        print("  Running sPLS-DA...")
-        splsda = SPLSDA(n_components=2)
+        # --- sPLS-DA (sparse) ---
+        splsda_keepX = [min(5, X.shape[1]), min(5, X.shape[1])]
+        print(f"  Running sPLS-DA (keepX={splsda_keepX})...")
+        splsda = SPLSDA(n_components=2, keepX=splsda_keepX)
         splsda.fit(X, y, feature_names=feature_names)
         
         scores_df = splsda.get_scores_df(sample_names)
@@ -75,7 +76,7 @@ def run_single_omics(blocks, results_dir):
                  save_path=layer_dir / "splsda_vip.png")
         save_csv(vip_df, layer_dir / "splsda_vip_scores.csv")
         
-        cv_splsda = cross_validate_splsda(X, y, n_components=2)
+        cv_splsda = cross_validate_splsda(X, y, n_components=2, keepX=splsda_keepX)
         print(f"  sPLS-DA LOO accuracy: {cv_splsda['accuracy']:.3f}")
         summary_rows.append({"Layer": layer_name, "Method": "sPLS-DA", "Accuracy": cv_splsda["accuracy"], "Type": "Single"})
         
@@ -92,15 +93,12 @@ def run_single_omics(blocks, results_dir):
                               save_path=layer_dir / "rf_confusion_matrix.png")
         save_csv(rf_imp, layer_dir / "rf_feature_importance.csv")
         
-        # SHAP (skip for very high-dimensional layers — too slow)
-        if X.shape[1] <= 1000:
-            try:
-                shap_vals, shap_df = compute_shap_values(rf_model, X, feature_names=feature_names)
-                save_csv(shap_df, layer_dir / "rf_shap_importance.csv")
-            except Exception as e:
-                print(f"  SHAP failed: {e}")
-        else:
-            print(f"  SHAP skipped ({X.shape[1]} features — too slow)")
+        # SHAP
+        try:
+            shap_vals, shap_df = compute_shap_values(rf_model, X, feature_names=feature_names)
+            save_csv(shap_df, layer_dir / "rf_shap_importance.csv")
+        except Exception as e:
+            print(f"  SHAP failed: {e}")
         
         # Permutation importance
         perm_imp = compute_permutation_importance(rf_model, X, y, feature_names=feature_names)
@@ -110,6 +108,25 @@ def run_single_omics(blocks, results_dir):
         summary_rows.append({"Layer": layer_name, "Method": "RF", "Accuracy": cv_rf["accuracy"], "Type": "Single"})
         
         all_importance[f"{layer_name}_rf"] = rf_imp.rename(columns={"Importance": "Score"})[["Feature", "Score"]]
+        
+        # RF Permutation Test
+        print("  Running RF permutation test (up to 200 perms, early stopping)...")
+        perm_rf = permutation_test_rf(X, y, n_permutations=200,
+                                       early_stop=True, min_perms=50, check_every=25)
+        save_json({
+            "true_accuracy": perm_rf["true_accuracy"],
+            "p_value": perm_rf["p_value"],
+            "mean_null": perm_rf["mean_null"],
+            "std_null": perm_rf["std_null"],
+            "n_permutations_run": perm_rf["n_permutations_run"],
+            "stopped_early": perm_rf["stopped_early"],
+        }, layer_dir / "rf_permutation_test.json")
+        plot_permutation_null(perm_rf, title=f"RF Permutation: {layer_name}",
+                              save_path=layer_dir / "rf_permutation_null.png")
+        early_note = f" (stopped early at {perm_rf['n_permutations_run']})" if perm_rf["stopped_early"] else ""
+        print(f"  RF permutation p-value: {perm_rf['p_value']:.4f}{early_note}")
+        # Update the RF summary row with p-value
+        summary_rows[-1]["Perm_P_Value"] = perm_rf["p_value"]
         
         # --- Ordinal Regression ---
         print("  Running Ordinal Regression...")
@@ -132,10 +149,30 @@ def run_single_omics(blocks, results_dir):
         
         all_importance[f"{layer_name}_ordinal"] = coef_df.rename(columns={"Abs_Coefficient": "Score"})[["Feature", "Score"]]
         
+        # Ordinal Permutation Test
+        print("  Running Ordinal permutation test (up to 200 perms, early stopping)...")
+        perm_ord = permutation_test_ordinal(X, y_enc, n_permutations=200,
+                                             early_stop=True, min_perms=50, check_every=25)
+        save_json({
+            "true_accuracy": perm_ord["true_accuracy"],
+            "p_value": perm_ord["p_value"],
+            "mean_null": perm_ord["mean_null"],
+            "std_null": perm_ord["std_null"],
+            "n_permutations_run": perm_ord["n_permutations_run"],
+            "stopped_early": perm_ord["stopped_early"],
+        }, layer_dir / "ordinal_permutation_test.json")
+        plot_permutation_null(perm_ord, title=f"Ordinal Permutation: {layer_name}",
+                              save_path=layer_dir / "ordinal_permutation_null.png")
+        early_note = f" (stopped early at {perm_ord['n_permutations_run']})" if perm_ord["stopped_early"] else ""
+        print(f"  Ordinal permutation p-value: {perm_ord['p_value']:.4f}{early_note}")
+        # Update the ordinal summary row with p-value
+        summary_rows[-1]["Perm_P_Value"] = perm_ord["p_value"]
+        
         # --- Stability Selection for sPLS-DA ---
         print("  Running sPLS-DA stability selection (100 bootstraps)...")
         stability_df = stability_selection_splsda(X, y, feature_names=feature_names,
-                                                   n_components=2, n_bootstrap=100)
+                                                   n_components=2, keepX=splsda_keepX,
+                                                   n_bootstrap=100)
         save_csv(stability_df, layer_dir / "splsda_stability.csv")
         plot_stability(stability_df, top_n=20, title=f"Stability Selection: {layer_name}",
                        save_path=layer_dir / "splsda_stability.png")
@@ -144,7 +181,8 @@ def run_single_omics(blocks, results_dir):
         
         # --- Permutation Test for sPLS-DA ---
         print("  Running sPLS-DA permutation test (up to 200 perms, early stopping)...")
-        perm_result = permutation_test_splsda(X, y, n_components=2, n_permutations=200,
+        perm_result = permutation_test_splsda(X, y, n_components=2, keepX=splsda_keepX,
+                                               n_permutations=200,
                                                early_stop=True, min_perms=50, check_every=25)
         save_json({
             "true_accuracy": perm_result["true_accuracy"],
@@ -158,6 +196,10 @@ def run_single_omics(blocks, results_dir):
                               save_path=layer_dir / "splsda_permutation_null.png")
         early_note = f" (stopped early at {perm_result['n_permutations_run']})" if perm_result["stopped_early"] else ""
         print(f"  sPLS-DA permutation p-value: {perm_result['p_value']:.4f}{early_note}")
+        # Back-fill p-value into the sPLS-DA summary row
+        for row in summary_rows:
+            if row["Layer"] == layer_name and row["Method"] == "sPLS-DA":
+                row["Perm_P_Value"] = perm_result["p_value"]
         
         # --- WGCNA ---
         print(f"  Running WGCNA (n={X.shape[0]}, p={X.shape[1]})...")

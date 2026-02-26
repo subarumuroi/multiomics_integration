@@ -48,7 +48,8 @@ multiomics_integration/
 | Method | Module | Purpose |
 |--------|--------|---------|
 | Permutation Testing | `plsda.permutation_test_splsda`, `permutation_test_diablo` | Label-shuffling null distribution with Clopper-Pearson early stopping |
-| Bootstrap Stability | `plsda.stability_selection_splsda` | 100 stratified bootstrap resamples; features with VIP ≥ 1 in ≥ 80% are "Stable" |
+| sPLS-DA Stability | `plsda.stability_selection_splsda` | 100 stratified bootstrap resamples of single-block sPLS-DA; features with VIP ≥ 1 in ≥ 80% are "Stable" |
+| DIABLO Stability | `plsda.stability_selection_diablo` | 100 stratified bootstrap resamples of the joint multi-block model; per-block stability frequencies |
 
 ### Unsupervised Network Analysis
 
@@ -91,8 +92,8 @@ python examples/banana_workflow.py
 
 This runs the full analysis pipeline:
 1. **Single-omics** (per layer): sPLS-DA, RF + SHAP, ordinal regression, stability selection, permutation testing, WGCNA
-2. **Multi-omics**: DIABLO integration, concatenated RF/ordinal baselines, DIABLO permutation testing
-3. **Consensus**: features appearing across multiple methods' top-15 lists
+2. **Multi-omics**: DIABLO integration, concatenated RF/ordinal baselines, DIABLO permutation testing, DIABLO stability selection
+3. **Consensus**: features appearing across multiple methods' top-15 lists, method convergence grid visualisation
 
 ## Outputs
 
@@ -133,7 +134,11 @@ results/
     ├── block_correlations.png
     ├── selected_features_<block>_comp<N>.csv
     ├── diablo_permutation_test.json
-    └── diablo_permutation_null.png
+    ├── diablo_permutation_null.png
+    ├── diablo_stability_<block>.csv  # DIABLO bootstrap stability per block
+    ├── diablo_stability_<block>.png
+    ├── method_convergence_grid.png   # Cross-method feature selection summary
+    └── method_convergence_grid.svg
 ```
 
 ## Validation

@@ -6,7 +6,8 @@ from .plsda import (
 )
 from .random_forest import (
     train_rf, cross_validate_rf,
-    compute_shap_values, compute_permutation_importance, permutation_test_rf,
+    compute_shap_values, compute_permutation_importance,
+    permutation_test_rf,
 )
-from .ordinal import train_ordinal, cross_validate_ordinal, compare_ordinal_models
+from .ordinal import train_ordinal, cross_validate_ordinal, compare_ordinal_models, get_coefficient_df, permutation_test_ordinal
 from .wgcna import run_wgcna
