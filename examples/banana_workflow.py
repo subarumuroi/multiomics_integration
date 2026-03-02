@@ -286,12 +286,42 @@ def run_multi_omics(blocks, results_dir):
     
     cv_concat = cross_validate_rf(X_concat, y)
     print(f"  Concatenated RF LOO accuracy: {cv_concat['accuracy']:.3f}")
+    print("  Running concatenated RF permutation test (up to 200 perms, early stopping)...")
+    perm_concat_rf = permutation_test_rf(X_concat, y, n_permutations=200,
+                                         early_stop=True, min_perms=50, check_every=25)
+    save_json({
+        "true_accuracy": perm_concat_rf["true_accuracy"],
+        "p_value": perm_concat_rf["p_value"],
+        "mean_null": perm_concat_rf["mean_null"],
+        "std_null": perm_concat_rf["std_null"],
+        "n_permutations_run": perm_concat_rf["n_permutations_run"],
+        "stopped_early": perm_concat_rf["stopped_early"],
+    }, multi_dir / "concat_rf_permutation_test.json")
+    plot_permutation_null(perm_concat_rf, title="Concat RF Permutation Test",
+                          save_path=multi_dir / "concat_rf_permutation_null.png")
+    early_note = f" (stopped early at {perm_concat_rf['n_permutations_run']})" if perm_concat_rf["stopped_early"] else ""
+    print(f"  Concat-RF permutation p-value: {perm_concat_rf['p_value']:.4f}{early_note}")
     
     # Also run ordinal on concatenated
     print("  Running concatenated ordinal regression...")
     y_enc = encode_ordinal(y)
     cv_ord_multi = cross_validate_ordinal(X_concat, y_enc)
     print(f"  Concatenated ordinal LOO accuracy: {cv_ord_multi['accuracy']:.3f}, MAE: {cv_ord_multi['mae']:.3f}")
+    print("  Running concatenated ordinal permutation test (up to 200 perms, early stopping)...")
+    perm_concat_ord = permutation_test_ordinal(X_concat, y_enc, n_permutations=200,
+                                               early_stop=True, min_perms=50, check_every=25)
+    save_json({
+        "true_accuracy": perm_concat_ord["true_accuracy"],
+        "p_value": perm_concat_ord["p_value"],
+        "mean_null": perm_concat_ord["mean_null"],
+        "std_null": perm_concat_ord["std_null"],
+        "n_permutations_run": perm_concat_ord["n_permutations_run"],
+        "stopped_early": perm_concat_ord["stopped_early"],
+    }, multi_dir / "concat_ordinal_permutation_test.json")
+    plot_permutation_null(perm_concat_ord, title="Concat Ordinal Permutation Test",
+                          save_path=multi_dir / "concat_ordinal_permutation_null.png")
+    early_note = f" (stopped early at {perm_concat_ord['n_permutations_run']})" if perm_concat_ord["stopped_early"] else ""
+    print(f"  Concat-Ordinal permutation p-value: {perm_concat_ord['p_value']:.4f}{early_note}")
     
     # --- DIABLO Permutation Test ---
     print("  Running DIABLO permutation test (up to 200 perms, early stopping)...")
@@ -314,9 +344,10 @@ def run_multi_omics(blocks, results_dir):
     summary_rows = [
         {"Layer": "all", "Method": "DIABLO", "Accuracy": cv_diablo["accuracy"],
          "Perm_P_Value": perm_diablo["p_value"], "Type": "Joint Integration"},
-        {"Layer": "all", "Method": "Concat-RF", "Accuracy": cv_concat["accuracy"], "Type": "Early Fusion"},
+        {"Layer": "all", "Method": "Concat-RF", "Accuracy": cv_concat["accuracy"],
+         "Perm_P_Value": perm_concat_rf["p_value"], "Type": "Early Fusion"},
         {"Layer": "all", "Method": "Concat-Ordinal", "Accuracy": cv_ord_multi["accuracy"], 
-         "MAE": cv_ord_multi["mae"], "Type": "Early Fusion"},
+         "MAE": cv_ord_multi["mae"], "Perm_P_Value": perm_concat_ord["p_value"], "Type": "Early Fusion"},
     ]
     
     importance_dfs = {}
