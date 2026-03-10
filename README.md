@@ -55,7 +55,13 @@ multiomics_integration/
 
 | Method | Module | Purpose |
 |--------|--------|---------|
-| WGCNA | `wgcna.run_wgcna` | Weighted correlation network → TOM → module detection → module-trait correlation → hub identification |
+| WGCNA | `wgcna.run_wgcna` | Pairwise correlation → soft thresholding → TOM → hierarchical clustering → module eigengenes → module-trait correlation → hub identification |
+
+Notes:
+- In the provided workflow, WGCNA is run **independently for each single-omics layer**; it is **not** used as a joint multi-omics network model.
+- `run_wgcna()` supports `network_type="unsigned"`, `"signed"`, or `"signed_hybrid"`; the banana example uses **unsigned**.
+- Module detection uses hierarchical clustering on `1 - TOM`, followed by **eigengene-based module merging** (`merge_cut_height=0.25` by default).
+- The example workflow generates biology-facing WGCNA visuals, including a **scale-free fit diagnostic**, **feature dendrogram with module colors**, **module-size summary**, and **module-trait association plot**.
 
 ## Preprocessing Pipeline
 
@@ -95,6 +101,12 @@ This runs the full analysis pipeline:
 2. **Multi-omics**: DIABLO integration, concatenated RF/ordinal baselines, DIABLO permutation testing, DIABLO stability selection
 3. **Consensus**: features appearing across multiple methods' top-15 lists, method convergence grid visualisation
 
+For WGCNA, the example currently uses:
+- `corr_method="spearman"`
+- `network_type="unsigned"`
+- automatic soft-threshold power selection
+- per-layer analysis only (no joint multi-omics WGCNA)
+
 ## Outputs
 
 Results are saved to `results/` with this structure:
@@ -102,7 +114,9 @@ Results are saved to `results/` with this structure:
 ```
 results/
 ├── method_comparison.csv           # All methods' LOO accuracies
-├── consensus_features.csv          # Features selected by ≥ 2 methods
+├── consensus_features.csv          # Features selected by ≥ 2 methods, enriched with WGCNA support columns
+├── candidate_driver_features.csv   # Ranked shortlist combining cross-method consensus + WGCNA module/hub evidence
+├── candidate_driver_features.png   # Visual summary of integrated candidate-driver evidence
 ├── consensus_features.png
 ├── single_omics/<layer>/
 │   ├── splsda_scores.png           # sPLS-DA sample scores (2D)
@@ -123,8 +137,13 @@ results/
 │   ├── ordinal_confusion_matrix.png
 │   └── wgcna/
 │       ├── module_assignments.csv
+│       ├── scale_free_fit.csv
+│       ├── scale_free_fit.png
+│       ├── module_dendrogram.png
+│       ├── module_sizes.png
 │       ├── module_trait_correlations.csv
 │       ├── module_trait_correlations.png
+│       ├── wgcna_parameters.json
 │       └── hub_features.csv
 └── multi_omics/
     ├── diablo_scores.png
@@ -151,10 +170,20 @@ python tests/validate_plsda.py
 
 Checks: Spearman rank correlation of VIP scores, top-5 feature overlap, class separation ordering. Warnings for expected differences (sample alignment, high dimensionality).
 
+WGCNA also has a lightweight smoke test:
+
+```bash
+python tests/validate_wgcna.py
+```
+
+Checks: adjacency/TOM sanity, returned metadata, and basic module detection behavior on the banana example dataset.
+
 ## Limitations
 
 - **Small sample size** (n = 9): LOO CV is the only viable validation strategy; permutation p-values help assess significance but confidence intervals are wide.
 - **WGCNA** was designed for n ≥ 15–20; results with n = 9 should be treated as exploratory.
+- **Candidate-driver prioritisation** should be interpreted as exploratory evidence integration, not causal inference.
+- **WGCNA implementation** follows the standard correlation → soft-threshold → TOM → clustering → eigengene → trait-association flow, but uses a pragmatic tree cut plus eigengene merging rather than the exact R `dynamicTreeCut` implementation.
 - **sPLS-DA/DIABLO** implementation differs from mixOmics R (different SVD initialisation, deflation strategy) — validated to produce equivalent rankings.
 
 ## Dependencies

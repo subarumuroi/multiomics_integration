@@ -32,10 +32,15 @@ from methods.wgcna import run_wgcna
 from visualization import (
     plot_scores, plot_vip, plot_importance, plot_confusion_matrix,
     plot_diablo_scores, plot_block_correlations, plot_consensus_features,
+    plot_candidate_drivers,
     plot_stability, plot_permutation_null, plot_module_trait,
+    plot_scale_free_fit, plot_wgcna_dendrogram, plot_module_sizes,
     plot_convergence_grid,
 )
-from utils import create_results_dir, save_csv, save_json, find_consensus_features
+from utils import (
+    create_results_dir, save_csv, save_json,
+    find_consensus_features, integrate_wgcna_evidence,
+)
 
 warnings.filterwarnings("ignore")
 
@@ -203,12 +208,48 @@ def run_single_omics(blocks, results_dir):
         
         # --- WGCNA ---
         print(f"  Running WGCNA (n={X.shape[0]}, p={X.shape[1]})...")
-        wgcna_result = run_wgcna(X, y_enc, feature_names=feature_names, corr_method="spearman")
+        wgcna_result = run_wgcna(
+            X,
+            y_enc,
+            feature_names=feature_names,
+            corr_method="spearman",
+            network_type="unsigned",
+        )
         
         wgcna_dir = layer_dir / "wgcna"
         wgcna_dir.mkdir(parents=True, exist_ok=True)
         save_csv(wgcna_result["modules"], wgcna_dir / "module_assignments.csv")
         save_csv(wgcna_result["module_trait"], wgcna_dir / "module_trait_correlations.csv")
+        if wgcna_result["scale_free_fit"] is not None:
+            selection = wgcna_result["scale_free_selection"] or {}
+            save_csv(wgcna_result["scale_free_fit"], wgcna_dir / "scale_free_fit.csv")
+            plot_scale_free_fit(
+                wgcna_result["scale_free_fit"],
+                selected_power=selection.get("power"),
+                selected_r2=selection.get("r_squared"),
+                target_r2=selection.get("target_r2", 0.8),
+                threshold_met=selection.get("threshold_met"),
+                title=f"Scale-Free Fit: {layer_name}",
+                save_path=wgcna_dir / "scale_free_fit.png",
+            )
+        save_json({
+            "power": wgcna_result["power"],
+            "network_type": wgcna_result["network_type"],
+            "module_cut_height": wgcna_result["module_cut_height"],
+            "merge_cut_height": wgcna_result["merge_cut_height"],
+            "scale_free_selection": wgcna_result["scale_free_selection"],
+        }, wgcna_dir / "wgcna_parameters.json")
+        plot_wgcna_dendrogram(
+            wgcna_result["linkage"],
+            wgcna_result["modules"],
+            title=f"WGCNA Dendrogram: {layer_name}",
+            save_path=wgcna_dir / "module_dendrogram.png",
+        )
+        plot_module_sizes(
+            wgcna_result["modules"],
+            title=f"Module Sizes: {layer_name}",
+            save_path=wgcna_dir / "module_sizes.png",
+        )
         if not wgcna_result["module_trait"].empty:
             plot_module_trait(wgcna_result["module_trait"],
                              title=f"Module-Trait: {layer_name}",
@@ -394,8 +435,22 @@ def main():
     all_importance = {**single_importance, **multi_importance}
     consensus = find_consensus_features(all_importance, top_n=15)
     if not consensus.empty:
+        consensus = integrate_wgcna_evidence(consensus, RESULTS_DIR)
         save_csv(consensus, RESULTS_DIR / "consensus_features.csv")
         plot_consensus_features(consensus, save_path=RESULTS_DIR / "consensus_features.png")
+        candidate_cols = [
+            "Feature", "layer", "n_methods", "wgcna_supported", "wgcna_is_hub",
+            "wgcna_module", "wgcna_module_trait_correlation", "wgcna_module_trait_p_value",
+            "wgcna_hub_score", "integrated_evidence_score", "methods",
+        ]
+        candidate_features = consensus[candidate_cols].copy()
+        save_csv(candidate_features, RESULTS_DIR / "candidate_driver_features.csv")
+        plot_candidate_drivers(
+            candidate_features,
+            top_n=25,
+            title="Candidate Driver Summary",
+            save_path=RESULTS_DIR / "candidate_driver_features.png",
+        )
         print(f"\nConsensus features (top across methods):")
         print(consensus.to_string(index=False))
 

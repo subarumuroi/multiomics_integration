@@ -14,11 +14,45 @@ from .methods.random_forest import (
     compute_permutation_importance, permutation_test_rf,
 )
 from .methods.ordinal import train_ordinal, cross_validate_ordinal, compare_ordinal_models, get_coefficient_df, permutation_test_ordinal
-from .methods.wgcna import run_wgcna
+from .methods.wgcna import (
+    compute_correlation_matrix, pick_soft_threshold, compute_adjacency,
+    compute_tom, detect_modules, compute_module_eigengenes,
+    merge_modules_by_eigengene, module_trait_correlation,
+    identify_hub_features, run_wgcna,
+)
 from .visualization import (
     plot_scores, plot_vip, plot_importance, plot_confusion_matrix,
     plot_diablo_scores, plot_block_correlations, plot_consensus_features,
+    plot_candidate_drivers,
     plot_stability, plot_permutation_null, plot_module_trait,
+    plot_scale_free_fit, plot_wgcna_dendrogram, plot_module_sizes,
     plot_convergence_grid, save_fig,
 )
-from .utils import create_results_dir, save_csv, save_json, find_consensus_features
+from .utils import (
+    create_results_dir, save_csv, save_json,
+    find_consensus_features, integrate_wgcna_evidence,
+)
+
+__all__ = [
+    "load_omics", "load_all_layers", "prepare_block", "prepare_multiblock",
+    "encode_ordinal", "align_blocks",
+    "SPLSDA", "DIABLO", "cross_validate_splsda", "cross_validate_diablo",
+    "permutation_test_splsda", "permutation_test_diablo",
+    "stability_selection_splsda", "stability_selection_diablo",
+    "train_rf", "cross_validate_rf", "compute_shap_values",
+    "compute_permutation_importance", "permutation_test_rf",
+    "train_ordinal", "cross_validate_ordinal", "compare_ordinal_models",
+    "get_coefficient_df", "permutation_test_ordinal",
+    "compute_correlation_matrix", "pick_soft_threshold", "compute_adjacency",
+    "compute_tom", "detect_modules", "compute_module_eigengenes",
+    "merge_modules_by_eigengene", "module_trait_correlation",
+    "identify_hub_features", "run_wgcna",
+    "plot_scores", "plot_vip", "plot_importance", "plot_confusion_matrix",
+    "plot_diablo_scores", "plot_block_correlations", "plot_consensus_features",
+    "plot_candidate_drivers",
+    "plot_stability", "plot_permutation_null", "plot_module_trait",
+    "plot_scale_free_fit", "plot_wgcna_dendrogram", "plot_module_sizes",
+    "plot_convergence_grid", "save_fig",
+    "create_results_dir", "save_csv", "save_json", "find_consensus_features",
+    "integrate_wgcna_evidence",
+]
