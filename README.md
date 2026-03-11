@@ -62,6 +62,7 @@ Notes:
 - `run_wgcna()` supports `network_type="unsigned"`, `"signed"`, or `"signed_hybrid"`; the banana example uses **unsigned**.
 - Module detection uses hierarchical clustering on `1 - TOM`, followed by **eigengene-based module merging** (`merge_cut_height=0.25` by default).
 - The example workflow generates biology-facing WGCNA visuals, including a **scale-free fit diagnostic**, **feature dendrogram with module colors**, **module-size summary**, and **module-trait association plot**.
+- `reduce_by_wgcna()` collapses each block to module eigengenes + hub features — a label-free dimensionality reduction that feeds into a **WGCNA-reduced DIABLO** pass, significantly stabilising feature selection when block sizes are imbalanced (e.g. proteomics 5,319 features vs metabolomics 21–99).
 
 ## Preprocessing Pipeline
 
@@ -99,7 +100,8 @@ python examples/banana_workflow.py
 This runs the full analysis pipeline:
 1. **Single-omics** (per layer): sPLS-DA, RF + SHAP, ordinal regression, stability selection, permutation testing, WGCNA
 2. **Multi-omics**: DIABLO integration, concatenated RF/ordinal baselines, DIABLO permutation testing, DIABLO stability selection
-3. **Consensus**: features appearing across multiple methods' top-15 lists, method convergence grid visualisation
+3. **WGCNA-reduced DIABLO**: WGCNA module eigengenes + hub features replace raw blocks, balancing block sizes and stabilising feature selection
+4. **Consensus**: features appearing across multiple methods' top-15 lists, method convergence grid visualisation
 
 For WGCNA, the example currently uses:
 - `corr_method="spearman"`
@@ -157,7 +159,18 @@ results/
     ├── diablo_stability_<block>.csv  # DIABLO bootstrap stability per block
     ├── diablo_stability_<block>.png
     ├── method_convergence_grid.png   # Cross-method feature selection summary
-    └── method_convergence_grid.svg
+    ├── method_convergence_grid.svg
+    └── wgcna_reduced/                 # DIABLO on WGCNA-reduced blocks
+        ├── reduction_meta.json        # Per-layer feature counts before/after
+        ├── block_correlations.csv
+        ├── block_correlations.png
+        ├── diablo_scores.png
+        ├── diablo_vip_<block>.png
+        ├── diablo_vip_scores.csv
+        ├── diablo_permutation_test.json
+        ├── diablo_permutation_null.png
+        ├── diablo_stability_<block>.csv
+        └── diablo_stability_<block>.png
 ```
 
 ## Validation

@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
+LAYER_ORDER = ["central_carbon", "amino_acids", "aromatics", "proteomics"]
+
 
 def create_results_dir(base_dir: str, name: str = "results") -> Path:
     """Create a results directory, return its path."""
@@ -13,10 +15,10 @@ def create_results_dir(base_dir: str, name: str = "results") -> Path:
     return p
 
 
-def save_csv(df, path):
+def save_csv(df, path, index=False):
     """Save DataFrame to CSV."""
     Path(path).parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(path, index=True)
+    df.to_csv(path, index=index)
 
 
 def save_json(data, path):
@@ -81,9 +83,9 @@ def find_consensus_features(importance_dfs: dict, top_n: int = 15) -> pd.DataFra
     return df
 
 
-def _infer_layer_from_methods(methods_str: str) -> str:
+def _infer_layer(methods_str: str) -> str:
     """Infer the omics layer from the consensus methods string."""
-    for layer in ["central_carbon", "amino_acids", "aromatics", "proteomics"]:
+    for layer in LAYER_ORDER:
         if layer in str(methods_str):
             return layer
     return "unknown"
@@ -108,7 +110,7 @@ def integrate_wgcna_evidence(consensus_df: pd.DataFrame, results_dir) -> pd.Data
 
     results_dir = Path(results_dir)
     enriched = consensus_df.copy()
-    enriched["layer"] = enriched["methods"].apply(_infer_layer_from_methods)
+    enriched["layer"] = enriched["methods"].apply(_infer_layer)
 
     for col in [
         "wgcna_supported", "wgcna_module", "wgcna_module_size",

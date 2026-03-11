@@ -28,7 +28,7 @@ from methods.plsda import (
 )
 from methods.random_forest import train_rf, cross_validate_rf, compute_shap_values, compute_permutation_importance, permutation_test_rf
 from methods.ordinal import cross_validate_ordinal, compare_ordinal_models, get_coefficient_df, permutation_test_ordinal
-from methods.wgcna import run_wgcna
+from methods.wgcna import run_wgcna, reduce_by_wgcna
 from visualization import (
     plot_scores, plot_vip, plot_importance, plot_confusion_matrix,
     plot_diablo_scores, plot_block_correlations, plot_consensus_features,
@@ -52,6 +52,7 @@ def run_single_omics(blocks, results_dir):
     """Run sPLS-DA, RF, and ordinal on each omics layer independently."""
     all_importance = {}
     summary_rows = []
+    wgcna_results = {}
     
     for layer_name, df in blocks.items():
         print(f"\n{'='*60}")
@@ -263,8 +264,10 @@ def run_single_omics(blocks, results_dir):
                 top_mod = wgcna_result["module_trait"].iloc[0]
                 print(f"  Top module-trait: Module {int(top_mod['Module'])} "
                       f"(r={top_mod['Correlation']:.3f}, p={top_mod['P_Value']:.4f})")
-    
-    return summary_rows, all_importance
+
+        wgcna_results[layer_name] = wgcna_result
+
+    return summary_rows, all_importance, wgcna_results
 
 
 def run_multi_omics(blocks, results_dir):
@@ -297,7 +300,7 @@ def run_multi_omics(blocks, results_dir):
     
     # Block correlations
     plot_block_correlations(diablo.correlations_, save_path=multi_dir / "block_correlations.png")
-    save_csv(diablo.correlations_, multi_dir / "block_correlations.csv")
+    save_csv(diablo.correlations_, multi_dir / "block_correlations.csv", index=True)
     print(f"  Block correlations:\n{diablo.correlations_.to_string()}")
     
     # VIP per block
@@ -412,19 +415,179 @@ def run_multi_omics(blocks, results_dir):
     return summary_rows, importance_dfs
 
 
+def run_reduced_diablo(blocks, wgcna_results, results_dir,
+                       min_features_for_reduction=0, label=None):
+    """Run DIABLO on WGCNA-reduced blocks for stabilised feature selection.
+
+    Parameters
+    ----------
+    min_features_for_reduction : int
+        Only reduce layers with more features than this threshold.
+        Layers at or below this value pass through with raw features.
+        Default 0 means reduce all layers.
+    label : str or None
+        Label suffix for output directory and method name.
+        Default None uses 'wgcna_reduced'.
+    """
+    dir_name = label or "wgcna_reduced"
+    method_label = f"DIABLO ({dir_name.replace('_', ' ')})"
+
+    print(f"\n{'='*60}")
+    print(f"  {method_label}")
+    print(f"{'='*60}")
+
+    reduced_dir = results_dir / "multi_omics" / dir_name
+    reduced_dir.mkdir(parents=True, exist_ok=True)
+
+    X_blocks, y, feature_names_full, sample_names = prepare_multiblock(blocks)
+    y_enc = encode_ordinal(y)
+
+    X_reduced_blocks = {}
+    reduced_feature_names = {}
+    reduction_meta = {}
+
+    for layer_name in X_blocks:
+        p = X_blocks[layer_name].shape[1]
+
+        # Skip reduction for small layers when threshold is set
+        if p <= min_features_for_reduction:
+            print(f"  {layer_name}: {p} features (<= {min_features_for_reduction}), keeping raw")
+            X_reduced_blocks[layer_name] = X_blocks[layer_name]
+            reduced_feature_names[layer_name] = feature_names_full[layer_name]
+            continue
+
+        if layer_name not in wgcna_results:
+            print(f"  {layer_name}: no WGCNA result, keeping raw")
+            X_reduced_blocks[layer_name] = X_blocks[layer_name]
+            reduced_feature_names[layer_name] = feature_names_full[layer_name]
+            continue
+
+        X_red, feat_names, meta = reduce_by_wgcna(
+            X_blocks[layer_name], wgcna_results[layer_name],
+            strategy="eigengenes_and_hubs",
+        )
+
+        if X_red.shape[1] == 0:
+            print(f"  {layer_name}: no modules detected, using raw features")
+            X_reduced_blocks[layer_name] = X_blocks[layer_name]
+            reduced_feature_names[layer_name] = feature_names_full[layer_name]
+        else:
+            X_reduced_blocks[layer_name] = X_red
+            reduced_feature_names[layer_name] = feat_names
+            reduction_meta[layer_name] = meta
+            print(f"  {layer_name}: {meta['n_original']} -> {meta['n_reduced']} features")
+
+    if not X_reduced_blocks:
+        print("  No blocks available for reduced DIABLO, skipping.")
+        return []
+
+    save_json(reduction_meta, reduced_dir / "reduction_meta.json")
+
+    # keepX: same conservative sparsity as full DIABLO for fair comparison
+    keepX = {}
+    for name, X_r in X_reduced_blocks.items():
+        p = X_r.shape[1]
+        keepX[name] = [min(5, p), min(5, p)]
+
+    # Fit reduced DIABLO
+    print(f"  Fitting {method_label}...")
+    diablo = DIABLO(n_components=2, keepX=keepX, design=0.1)
+    diablo.fit(X_reduced_blocks, y, feature_names=reduced_feature_names)
+
+    plot_diablo_scores(diablo, y, save_dir=reduced_dir)
+    plot_block_correlations(diablo.correlations_,
+                            title=f"Block Correlations ({method_label})",
+                            save_path=reduced_dir / "block_correlations.png")
+    save_csv(diablo.correlations_, reduced_dir / "block_correlations.csv", index=True)
+
+    # VIP scores
+    all_vip = diablo.get_all_vip_df()
+    save_csv(all_vip, reduced_dir / "diablo_vip_scores.csv")
+    for name in diablo.block_names_:
+        vip_df = diablo.get_vip_df(name)
+        plot_vip(vip_df, top_n=min(15, len(vip_df)),
+                 title=f"{method_label} VIP: {name}",
+                 save_path=reduced_dir / f"diablo_vip_{name}.png")
+
+    # LOO CV
+    print(f"  Running {method_label} LOO CV...")
+    cv = cross_validate_diablo(X_reduced_blocks, y, n_components=2,
+                               keepX=keepX, design=0.1)
+    print(f"  {method_label} LOO accuracy: {cv['accuracy']:.3f}")
+
+    # Permutation test
+    print(f"  Running {method_label} permutation test (up to 200 perms)...")
+    perm = permutation_test_diablo(X_reduced_blocks, y, n_components=2,
+                                   keepX=keepX, design=0.1,
+                                   n_permutations=200,
+                                   early_stop=True, min_perms=50,
+                                   check_every=25)
+    save_json({
+        "true_accuracy": perm["true_accuracy"],
+        "p_value": perm["p_value"],
+        "mean_null": perm["mean_null"],
+        "std_null": perm["std_null"],
+        "n_permutations_run": perm["n_permutations_run"],
+        "stopped_early": perm["stopped_early"],
+    }, reduced_dir / "diablo_permutation_test.json")
+    plot_permutation_null(perm, title=f"{method_label} Permutation Test",
+                          save_path=reduced_dir / "diablo_permutation_null.png")
+    early_note = (f" (stopped early at {perm['n_permutations_run']})"
+                  if perm["stopped_early"] else "")
+    print(f"  {method_label} permutation p-value: {perm['p_value']:.4f}{early_note}")
+
+    # Stability selection
+    print(f"  Running {method_label} stability selection (100 bootstraps)...")
+    stab = stability_selection_diablo(
+        X_reduced_blocks, y, feature_names=reduced_feature_names,
+        n_components=2, keepX=keepX, design=0.1, n_bootstrap=100,
+    )
+    for name, sdf in stab.items():
+        save_csv(sdf, reduced_dir / f"diablo_stability_{name}.csv")
+        plot_stability(sdf, top_n=20,
+                       title=f"{method_label} Stability: {name}",
+                       save_path=reduced_dir / f"diablo_stability_{name}.png")
+        n_stable = sdf["Stable"].sum()
+        print(f"    {name}: {n_stable}/{len(sdf)} stable features")
+
+    summary_rows = [
+        {"Layer": "all", "Method": method_label,
+         "Accuracy": cv["accuracy"],
+         "Perm_P_Value": perm["p_value"],
+         "Type": "WGCNA-Reduced Integration"},
+    ]
+    return summary_rows
+
+
 def main():
     print("Loading banana ripening dataset...")
     blocks = load_all_layers(str(DATA_DIR))
     print(f"Loaded {len(blocks)} omics layers: {list(blocks.keys())}")
     
     # Single-omics
-    single_summary, single_importance = run_single_omics(blocks, RESULTS_DIR)
+    single_summary, single_importance, wgcna_results = run_single_omics(blocks, RESULTS_DIR)
     
     # Multi-omics
     multi_summary, multi_importance = run_multi_omics(blocks, RESULTS_DIR)
+
+    # --- WGCNA-reduced DIABLO (all layers reduced) ---
+    reduced_all_summary = run_reduced_diablo(
+        blocks, wgcna_results, RESULTS_DIR,
+        min_features_for_reduction=0,
+        label="wgcna_reduced_all",
+    )
+
+    # --- WGCNA-reduced DIABLO (selective: only layers with p > 50) ---
+    reduced_sel_summary = run_reduced_diablo(
+        blocks, wgcna_results, RESULTS_DIR,
+        min_features_for_reduction=50,
+        label="wgcna_reduced_selective",
+    )
     
     # Combined summary
-    all_summary = pd.DataFrame(single_summary + multi_summary)
+    all_summary = pd.DataFrame(
+        single_summary + multi_summary + reduced_all_summary + reduced_sel_summary
+    )
     save_csv(all_summary, RESULTS_DIR / "method_comparison.csv")
     print(f"\n{'='*60}")
     print("  Method Comparison")

@@ -18,7 +18,7 @@ from .methods.wgcna import (
     compute_correlation_matrix, pick_soft_threshold, compute_adjacency,
     compute_tom, detect_modules, compute_module_eigengenes,
     merge_modules_by_eigengene, module_trait_correlation,
-    identify_hub_features, run_wgcna,
+    identify_hub_features, run_wgcna, reduce_by_wgcna,
 )
 from .visualization import (
     plot_scores, plot_vip, plot_importance, plot_confusion_matrix,
@@ -46,7 +46,7 @@ __all__ = [
     "compute_correlation_matrix", "pick_soft_threshold", "compute_adjacency",
     "compute_tom", "detect_modules", "compute_module_eigengenes",
     "merge_modules_by_eigengene", "module_trait_correlation",
-    "identify_hub_features", "run_wgcna",
+    "identify_hub_features", "run_wgcna", "reduce_by_wgcna",
     "plot_scores", "plot_vip", "plot_importance", "plot_confusion_matrix",
     "plot_diablo_scores", "plot_block_correlations", "plot_consensus_features",
     "plot_candidate_drivers",

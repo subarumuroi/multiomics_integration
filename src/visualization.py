@@ -7,6 +7,11 @@ import seaborn as sns
 from pathlib import Path
 from scipy.cluster.hierarchy import dendrogram
 
+try:
+    from .utils import _infer_layer
+except ImportError:
+    from utils import _infer_layer
+
 # Consistent color scheme for banana ripeness
 CLASS_COLORS = {"Green": "#2ca02c", "Ripe": "#ff7f0e", "Overripe": "#d62728"}
 CLASS_ORDER = ["Green", "Ripe", "Overripe"]
@@ -539,7 +544,6 @@ def plot_module_trait(module_trait_df, title="Module-Trait Correlations", save_p
 # Method convergence grid
 # ---------------------------------------------------------------------------
 
-LAYER_ORDER = ["central_carbon", "amino_acids", "aromatics", "proteomics"]
 LAYER_DISPLAY = {
     "central_carbon": "Central Carbon",
     "amino_acids": "Amino Acids",
@@ -564,14 +568,6 @@ def _short_feature_name(feature):
     if ";" in s and len(s) > 20:
         return s.split(";")[0]
     return s
-
-
-def _infer_layer(methods_str):
-    """Return the omics layer a feature belongs to from its methods string."""
-    for layer in LAYER_ORDER:
-        if layer in methods_str:
-            return layer
-    return "unknown"
 
 
 def _fmt_stab(val):

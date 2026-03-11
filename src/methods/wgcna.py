@@ -673,3 +673,94 @@ def run_wgcna(X, y_encoded, feature_names=None, power=None, corr_method="spearma
         },
         "eigengenes": eigengenes,
     }
+
+
+# ---------------------------------------------------------------------------
+# WGCNA-based dimensionality reduction
+# ---------------------------------------------------------------------------
+
+def reduce_by_wgcna(X, wgcna_result, strategy="eigengenes_and_hubs"):
+    """Create a reduced feature matrix using WGCNA module structure.
+
+    Uses WGCNA as an *unsupervised* dimensionality-reduction step:
+    correlated features are collapsed into module eigengenes, and optionally
+    supplemented by hub features that retain individual identity.
+
+    Because WGCNA never sees the class labels during module construction,
+    this introduces **no data leakage** and can safely precede supervised
+    methods such as sPLS-DA, DIABLO, RF, or ordinal regression.
+
+    Parameters
+    ----------
+    X : ndarray (n_samples, n_features)
+        The same matrix that was passed to ``run_wgcna``.
+    wgcna_result : dict
+        Return value of ``run_wgcna``.
+    strategy : {'eigengenes_only', 'hubs_only', 'eigengenes_and_hubs'}
+        - ``eigengenes_only``: one column per non-grey module (1st PC).
+        - ``hubs_only``: columns for hub features only.
+        - ``eigengenes_and_hubs``: both (default).
+
+    Returns
+    -------
+    X_reduced : ndarray (n_samples, p_reduced)
+    feature_names : list of str
+        Human-readable names; eigengene columns are prefixed ``ME_``.
+    meta : dict
+        ``n_original``, ``n_reduced``, ``strategy``, ``module_counts``.
+    """
+    valid = {"eigengenes_only", "hubs_only", "eigengenes_and_hubs"}
+    if strategy not in valid:
+        raise ValueError(f"strategy must be one of {sorted(valid)}, got '{strategy}'")
+
+    modules_df = wgcna_result["modules"]
+    eigengenes = wgcna_result["eigengenes"]
+    hubs_df = wgcna_result["hubs"]
+    all_features = modules_df["Feature"].tolist()
+
+    cols = []
+    names = []
+
+    # --- Eigengene columns ---
+    if strategy in ("eigengenes_only", "eigengenes_and_hubs"):
+        for mod_id in sorted(eigengenes):
+            cols.append(eigengenes[mod_id].reshape(-1, 1))
+            names.append(f"ME_{mod_id}")
+
+    # --- Hub feature columns ---
+    if strategy in ("hubs_only", "eigengenes_and_hubs"):
+        hub_names = set()
+        if hubs_df is not None and not hubs_df.empty:
+            hub_rows = hubs_df[hubs_df["Is_Hub"]]
+            hub_names = set(hub_rows["Feature"].tolist())
+
+        for feat in hub_names:
+            if feat in all_features:
+                idx = all_features.index(feat)
+                cols.append(X[:, idx].reshape(-1, 1))
+                names.append(feat)
+
+    if not cols:
+        # Fallback: no modules detected — return empty reduction
+        return np.empty((X.shape[0], 0)), [], {
+            "n_original": X.shape[1],
+            "n_reduced": 0,
+            "strategy": strategy,
+            "module_counts": {},
+        }
+
+    X_reduced = np.hstack(cols)
+
+    module_counts = (
+        modules_df[modules_df["Module"] != 0]["Module"]
+        .value_counts()
+        .sort_index()
+        .to_dict()
+    )
+
+    return X_reduced, names, {
+        "n_original": X.shape[1],
+        "n_reduced": X_reduced.shape[1],
+        "strategy": strategy,
+        "module_counts": module_counts,
+    }
