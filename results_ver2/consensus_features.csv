@@ -1,0 +1,66 @@
+Feature,n_methods,methods,layer,wgcna_supported,wgcna_module,wgcna_module_size,wgcna_module_trait_correlation,wgcna_module_trait_p_value,wgcna_is_hub,wgcna_hub_score,wgcna_support_score,integrated_evidence_score
+19_F16DP_0.0 : Conc. (nM),4,"central_carbon_splsda, central_carbon_rf, central_carbon_ordinal, diablo_central_carbon",central_carbon,False,,,,,False,,0,4
+48_SUCC_0.0 : Conc. (nM),4,"central_carbon_splsda, central_carbon_rf, central_carbon_ordinal, diablo_central_carbon",central_carbon,False,,,,,False,,0,4
+54_UTP0.0 : Conc. (nM),4,"central_carbon_splsda, central_carbon_rf, central_carbon_ordinal, diablo_central_carbon",central_carbon,False,,,,,False,,0,4
+47_SHIK 0.0 : Conc. (nM),4,"central_carbon_splsda, central_carbon_rf, central_carbon_ordinal, diablo_central_carbon",central_carbon,False,,,,,False,,0,4
+GLU,4,"amino_acids_splsda, amino_acids_rf, amino_acids_ordinal, diablo_amino_acids",amino_acids,False,,,,,False,,0,4
+GLY,4,"amino_acids_splsda, amino_acids_rf, amino_acids_ordinal, diablo_amino_acids",amino_acids,False,,,,,False,,0,4
+VAL,4,"amino_acids_splsda, amino_acids_rf, amino_acids_ordinal, diablo_amino_acids",amino_acids,False,,,,,False,,0,4
+ASP,4,"amino_acids_splsda, amino_acids_rf, amino_acids_ordinal, diablo_amino_acids",amino_acids,False,,,,,False,,0,4
+GABA,4,"amino_acids_splsda, amino_acids_rf, amino_acids_ordinal, diablo_amino_acids",amino_acids,False,,,,,False,,0,4
+SER,4,"amino_acids_splsda, amino_acids_rf, amino_acids_ordinal, diablo_amino_acids",amino_acids,False,,,,,False,,0,4
+TYR,4,"amino_acids_splsda, amino_acids_rf, amino_acids_ordinal, diablo_amino_acids",amino_acids,False,,,,,False,,0,4
+"2,4-Hexadienal Area",4,"aromatics_splsda, aromatics_rf, aromatics_ordinal, diablo_aromatics",aromatics,False,,,,,False,,0,4
+Hexanal Area,4,"aromatics_splsda, aromatics_rf, aromatics_ordinal, diablo_aromatics",aromatics,False,,,,,False,,0,4
+A0A804JSQ2,3,"proteomics_splsda, proteomics_ordinal, diablo_proteomics",proteomics,True,2.0,270.0,-0.9486832980505138,9.584590571929182e-05,False,0.6789288615946952,1,4
+15_CMP 0.0 : Conc. (nM),3,"central_carbon_splsda, central_carbon_ordinal, diablo_central_carbon",central_carbon,False,,,,,False,,0,3
+13_ATP_0.0 : Conc. (nM),3,"central_carbon_splsda, central_carbon_ordinal, diablo_central_carbon",central_carbon,False,,,,,False,,0,3
+28_GMP 0.0 : Conc. (nM),3,"central_carbon_splsda, central_carbon_ordinal, diablo_central_carbon",central_carbon,False,,,,,False,,0,3
+21_FUM_0.0 : Conc. (nM),3,"central_carbon_splsda, central_carbon_rf, diablo_central_carbon",central_carbon,False,,,,,False,,0,3
+ILE,3,"amino_acids_splsda, amino_acids_rf, diablo_amino_acids",amino_acids,False,,,,,False,,0,3
+PRO,3,"amino_acids_splsda, amino_acids_ordinal, diablo_amino_acids",amino_acids,False,,,,,False,,0,3
+LEU,3,"amino_acids_splsda, amino_acids_ordinal, diablo_amino_acids",amino_acids,False,,,,,False,,0,3
+PHE,3,"amino_acids_splsda, amino_acids_rf, diablo_amino_acids",amino_acids,False,,,,,False,,0,3
+ALA,3,"amino_acids_splsda, amino_acids_rf, diablo_amino_acids",amino_acids,False,,,,,False,,0,3
+35_NAD 0.0 : Conc. (nM),3,"central_carbon_splsda, central_carbon_rf, diablo_central_carbon",central_carbon,False,,,,,False,,0,3
+32_KGA_0.0 : Conc. (nM),3,"central_carbon_splsda, central_carbon_ordinal, diablo_central_carbon",central_carbon,False,,,,,False,,0,3
+GLN,3,"amino_acids_splsda, amino_acids_ordinal, diablo_amino_acids",amino_acids,False,,,,,False,,0,3
+ASN,3,"amino_acids_splsda, amino_acids_rf, diablo_amino_acids",amino_acids,False,,,,,False,,0,3
+A0A4S8KI46;A0A4S8KI46;A0A804IZ24,3,"proteomics_splsda, proteomics_ordinal, diablo_proteomics",proteomics,False,0.0,,,,False,,0,3
+1-Heptanol Area,3,"aromatics_splsda, aromatics_ordinal, diablo_aromatics",aromatics,False,,,,,False,,0,3
+2-Nonanol Area,3,"aromatics_splsda, aromatics_rf, diablo_aromatics",aromatics,False,,,,,False,,0,3
+Isoamyl alcohol Area,3,"aromatics_splsda, aromatics_rf, diablo_aromatics",aromatics,False,,,,,False,,0,3
+DHAP_0.0 : Conc. (nM),3,"central_carbon_splsda, central_carbon_ordinal, diablo_central_carbon",central_carbon,False,,,,,False,,0,3
+11_AMP 0.0 : Conc. (nM),3,"central_carbon_splsda, central_carbon_ordinal, diablo_central_carbon",central_carbon,False,,,,,False,,0,3
+A0A4S8I4C7;A0A4S8I4C7;A0A4S8I522;A0A4S8I522;A0A4S8I6F1;A0A4S8I6F1;A0A4S8I6L8;A0A4S8I6L8,2,"proteomics_splsda, diablo_proteomics",proteomics,True,2.0,270.0,-0.9486832980505138,9.584590571929182e-05,False,0.7064388795796789,1,3
+LYS,2,"amino_acids_rf, amino_acids_ordinal",amino_acids,False,,,,,False,,0,2
+CYS,2,"amino_acids_splsda, diablo_amino_acids",amino_acids,False,,,,,False,,0,2
+2_3PG_0.0 : Conc. (nM),2,"central_carbon_rf, central_carbon_ordinal",central_carbon,False,,,,,False,,0,2
+33_LAC_0.0 : Conc. (nM),2,"central_carbon_splsda, diablo_central_carbon",central_carbon,False,,,,,False,,0,2
+44_R5P_0.0 : Conc. (nM),2,"central_carbon_splsda, diablo_central_carbon",central_carbon,False,,,,,False,,0,2
+55_X5P_0.0 : Conc. (nM),2,"central_carbon_splsda, diablo_central_carbon",central_carbon,False,,,,,False,,0,2
+53_UMP 0.0 : Conc. (nM),2,"central_carbon_rf, central_carbon_ordinal",central_carbon,False,,,,,False,,0,2
+3-Pentanone Area,2,"aromatics_splsda, diablo_aromatics",aromatics,False,,,,,False,,0,2
+2-Methyl-1-butanol Area,2,"aromatics_splsda, diablo_aromatics",aromatics,False,,,,,False,,0,2
+2-Pentanone Area,2,"aromatics_splsda, diablo_aromatics",aromatics,False,,,,,False,,0,2
+Hexyl acetate Area,2,"aromatics_splsda, diablo_aromatics",aromatics,False,,,,,False,,0,2
+Propyl butyrate Area,2,"aromatics_splsda, diablo_aromatics",aromatics,False,,,,,False,,0,2
+(Z)-2-Penten-1-ol Area,2,"aromatics_splsda, diablo_aromatics",aromatics,False,,,,,False,,0,2
+"(2E,6Z)-nona-2,6-dienal Area",2,"aromatics_splsda, diablo_aromatics",aromatics,False,,,,,False,,0,2
+THR,2,"amino_acids_rf, amino_acids_ordinal",amino_acids,False,,,,,False,,0,2
+MET,2,"amino_acids_rf, amino_acids_ordinal",amino_acids,False,,,,,False,,0,2
+1-Hexanol Area,2,"aromatics_splsda, diablo_aromatics",aromatics,False,,,,,False,,0,2
+1-Butanol Area,2,"aromatics_splsda, diablo_aromatics",aromatics,False,,,,,False,,0,2
+A0A4S8JIE0;A0A4S8JIE0,2,"proteomics_splsda, diablo_proteomics",proteomics,False,0.0,,,,False,,0,2
+(3Z)-3-Hexenyl acetate Area,2,"aromatics_splsda, diablo_aromatics",aromatics,False,,,,,False,,0,2
+A0A4S8JJ79;A0A4S8JJ79;A0A804JTL2;A0A804JTL3,2,"proteomics_splsda, diablo_proteomics",proteomics,False,0.0,,,,False,,0,2
+A0A4S8KCV5;A0A4S8KCV5,2,"proteomics_splsda, diablo_proteomics",proteomics,False,0.0,,,,False,,0,2
+A0A804IBQ9;A0A804IBR0,2,"proteomics_splsda, diablo_proteomics",proteomics,False,0.0,,,,False,,0,2
+A0A4S8ID85;A0A4S8ID85,2,"proteomics_splsda, diablo_proteomics",proteomics,False,0.0,,,,False,,0,2
+A0A804IK01,2,"proteomics_splsda, diablo_proteomics",proteomics,False,0.0,,,,False,,0,2
+A0A804KSR2,2,"proteomics_splsda, diablo_proteomics",proteomics,False,0.0,,,,False,,0,2
+A0A4S8JRR3;A0A4S8JRR3;A0A804HWE9;A0A804JKF4,2,"proteomics_splsda, proteomics_ordinal",proteomics,False,0.0,,,,False,,0,2
+A0A4S8I3R0;A0A4S8I3R0;A0A4S8I4D9;A0A4S8I4D9;A0A4S8I4Q2;A0A4S8I4Q2;A0A4S8I512;A0A4S8I512;A0A4S8I596;A0A4S8I596;A0A4S8K4E8;A0A4S8K4E8,2,"proteomics_splsda, diablo_proteomics",proteomics,False,0.0,,,,False,,0,2
+A0A804LAG0,2,"proteomics_splsda, diablo_proteomics",proteomics,False,0.0,,,,False,,0,2
+A0A4S8I761;A0A4S8I761;A0A804I6Q1,2,"proteomics_splsda, diablo_proteomics",proteomics,False,0.0,,,,False,,0,2
+A0A4S8I1S0;A0A4S8I1S0;A0A4S8I227;A0A4S8I227,2,"proteomics_splsda, diablo_proteomics",proteomics,False,0.0,,,,False,,0,2

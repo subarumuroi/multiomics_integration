@@ -1,0 +1,100 @@
+Feature,Selection_Frequency,Mean_VIP,Std_VIP,Stable
+Hexanal Area,0.98,4.043754414323223,0.7311779435096135,True
+"2,4-Hexadienal Area",0.97,3.4457185303553577,0.667257329814804,True
+2-Pentanone Area,0.82,2.2248792476831416,1.0878472569060524,True
+trans-2-Hexenal Area,0.74,2.475934766951925,1.4780480246739875,False
+3-Pentanone Area,0.69,1.8826978660528646,1.293755605977387,False
+Isoamyl acetate Area,0.69,1.9259828162380943,1.322566681115303,False
+2-Methylbutyl acetate Area,0.61,1.728925924195608,1.4093854098610037,False
+Hexyl acetate Area,0.59,1.9174211997805157,1.614044435399727,False
+3-Methyl-2-buten-1-ol Area,0.57,1.5869139638324838,1.3923537026535506,False
+Isoamyl alcohol Area,0.45,1.2836734063741908,1.446310557973953,False
+2-Methyl-1-butanol Area,0.44,1.2465634750938117,1.4326803004941764,False
+trans-2-Hexen-1-ol Area,0.33,1.0238676548369674,1.4658393125462943,False
+(Z)-2-Penten-1-ol Area,0.29,0.882719458376452,1.3887225121001996,False
+2-Nonanol Area,0.26,0.6602593940909192,1.1237303294115597,False
+Propyl acetate Area,0.26,0.7674011508586039,1.3163190051186435,False
+(Z)-hex-2-en-1-ol Area,0.24,0.7517348137191188,1.342592197663191,False
+Propyl butyrate Area,0.22,0.6971525932540108,1.3171911439434392,False
+2-Heptanone Area,0.19,0.47155420051030567,0.9831866766976283,False
+Hexyl butyrate Area,0.15,0.40432708236296905,0.9673596356070826,False
+(Z)-4-Heptenal Area,0.1,0.35439743649998184,1.0662197834304552,False
+trans-2-Penten-1-ol Area,0.08,0.2277973602634147,0.773844207027248,False
+1-Butanol Area,0.07,0.2184784397716336,0.7979086503538289,False
+Methyl isovalerate Area,0.05,0.1435227050146536,0.6363909235725275,False
+Heptanal Area,0.03,0.08018588309713354,0.4559753371539327,False
+2-Ethylfuran Area,0.03,0.09865751308584723,0.5613621060139568,False
+"(E,E)-2,4-nonadienal Area",0.02,0.05210455734380238,0.36560305003607074,False
+Propyl hexanoate Area,0.02,0.06289509430338992,0.44088056124655073,False
+2-Heptanol Area,0.02,0.06020984269503543,0.42149145984880193,False
+2-Pentylfuran Area,0.02,0.04543800572629663,0.3180697331433466,False
+3-Octanone Area,0.01,0.03128637557190174,0.31129550646641646,False
+3-Mercapto-3-methylbutyl formate Area,0.01,0.02220096280160103,0.2208967907926442,False
+"2,6-Nonadienol Area",0.01,0.030113379946443964,0.29962434735530163,False
+"2,4-Heptadienal Area",0.01,0.03253442657852906,0.3237134571910408,False
+Isobutyric acid Area,0.01,0.03295076160390326,0.32785593838978994,False
+Heptyl acetate Area,0.01,0.031736947687638455,0.3157786424131024,False
+Ethyl 2-methylbutyrate Area,0.01,0.027030252878605925,0.26894762036027936,False
+2-Pentanol Area,0.0,0.0,0.0,False
+3-Hexanone Area,0.0,0.0,0.0,False
+2-Hexanone Area,0.0,0.0,0.0,False
+1-Nonanol Area,0.0,0.0,0.0,False
+(E)-2-Octen-1-ol Area,0.0,0.0,0.0,False
+(Z)-Linalool oxide Area,0.0,0.0,0.0,False
+(E)-Linalool oxide Area,0.0,0.0,0.0,False
+(Z)-beta-Ocimene Area,0.0,0.0,0.0,False
+1-Heptanol Area,0.0,0.0,0.0,False
+1-Hexanol Area,0.0,0.0,0.0,False
+1-Hexen-3-one Area,0.0,0.0,0.0,False
+1-Octen-3-one Area,0.0,0.0,0.0,False
+1-Octen-3-ol Area,0.0,0.0,0.0,False
+1-Pentanol Area,0.0,0.0,0.0,False
+(E)-2-Nonenal Area,0.0,0.0,0.0,False
+(3Z)-3-Hexenyl acetate Area,0.0,0.0,0.0,False
+"(2E,6Z)-nona-2,6-dienal Area",0.0,0.0,0.0,False
+2-Methylpentan-2-ol Area,0.0,0.0,0.0,False
+Butyl decanoate Area,0.0,0.0,0.0,False
+3-Pentanol Area,0.0,0.0,0.0,False
+4-Ethylphenol Area,0.0,0.0,0.0,False
+6-Methoxyeugenol Area,0.0,0.0,0.0,False
+3-Methyl-2-butanone Area,0.0,0.0,0.0,False
+Acetal Area,0.0,0.0,0.0,False
+Acetoin Area,0.0,0.0,0.0,False
+Acetophenone Area,0.0,0.0,0.0,False
+Allyl isothiocyanate Area,0.0,0.0,0.0,False
+Benzaldehyde Area,0.0,0.0,0.0,False
+Butyl 2-methylbutyrate Area,0.0,0.0,0.0,False
+Butyl acetate Area,0.0,0.0,0.0,False
+6-Methyl-5-hepten-2-one Area,0.0,0.0,0.0,False
+Guaiacol Area,0.0,0.0,0.0,False
+Geranyl isovalerate Area,0.0,0.0,0.0,False
+Geranyl butyrate Area,0.0,0.0,0.0,False
+Eugenol Area,0.0,0.0,0.0,False
+Ethyl vinyl ketone Area,0.0,0.0,0.0,False
+Ethyl valerate Area,0.0,0.0,0.0,False
+Ethyl stearate Area,0.0,0.0,0.0,False
+Ethyl octanoate Area,0.0,0.0,0.0,False
+Ethyl laurate Area,0.0,0.0,0.0,False
+Ethyl isobutyrate Area,0.0,0.0,0.0,False
+Ethyl butanoate Area,0.0,0.0,0.0,False
+Ethyl benzoate Area,0.0,0.0,0.0,False
+Ethyl 3-methylbutanoate Area,0.0,0.0,0.0,False
+Butyric acid Area,0.0,0.0,0.0,False
+Butyl hexanoate Area,0.0,0.0,0.0,False
+Isoamyl butyrate Area,0.0,0.0,0.0,False
+Pentyl acetate Area,0.0,0.0,0.0,False
+Octyl acetate Area,0.0,0.0,0.0,False
+Nonyl acetate Area,0.0,0.0,0.0,False
+Neryl acetate Area,0.0,0.0,0.0,False
+Methyl isobutyl ketone Area,0.0,0.0,0.0,False
+Isopropyl hexanoate Area,0.0,0.0,0.0,False
+Propanoic acid Area,0.0,0.0,0.0,False
+Pentyl butyrate Area,0.0,0.0,0.0,False
+Tetrahydrothiophene Area,0.0,0.0,0.0,False
+Tetradecanal Area,0.0,0.0,0.0,False
+Phenylacetaldehyde Area,0.0,0.0,0.0,False
+alpha-Thujone Area,0.0,0.0,0.0,False
+gamma-Undecalactone Area,0.0,0.0,0.0,False
+gamma-Terpinene Area,0.0,0.0,0.0,False
+cis-3-Hexen-1-ol Area,0.0,0.0,0.0,False
+trans-2-Heptenal Area,0.0,0.0,0.0,False

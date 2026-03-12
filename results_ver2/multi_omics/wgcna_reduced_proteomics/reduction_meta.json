@@ -1,0 +1,11 @@
+{
+  "proteomics": {
+    "n_original": 5319,
+    "n_reduced": 12,
+    "strategy": "eigengenes_and_hubs",
+    "module_counts": {
+      "1": 46,
+      "2": 270
+    }
+  }
+}

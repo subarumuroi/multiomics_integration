@@ -1,0 +1,8 @@
+{
+  "true_accuracy": 1.0,
+  "p_value": 0.014925373134328358,
+  "mean_null": 0.2516666666666667,
+  "std_null": 0.1995295392593213,
+  "n_permutations_run": 200,
+  "stopped_early": true
+}

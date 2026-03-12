@@ -1,0 +1,166 @@
+Feature,VIP,Block,Important
+21_FUM_0.0 : Conc. (nM),2.9219648321317924,central_carbon,True
+33_LAC_0.0 : Conc. (nM),2.3488552086113765,central_carbon,True
+13_ATP_0.0 : Conc. (nM),2.217958862193372,central_carbon,True
+48_SUCC_0.0 : Conc. (nM),2.1517481929641558,central_carbon,True
+54_UTP0.0 : Conc. (nM),1.7345088861336557,central_carbon,True
+19_F16DP_0.0 : Conc. (nM),1.5893447990789693,central_carbon,True
+DHAP_0.0 : Conc. (nM),1.1971907856829576,central_carbon,True
+44_R5P_0.0 : Conc. (nM),1.1035489228716673,central_carbon,True
+15_CMP 0.0 : Conc. (nM),1.100006799763629,central_carbon,True
+47_SHIK 0.0 : Conc. (nM),0.0,central_carbon,False
+35_NAD 0.0 : Conc. (nM),0.0,central_carbon,False
+28_GMP 0.0 : Conc. (nM),0.0,central_carbon,False
+53_UMP 0.0 : Conc. (nM),0.0,central_carbon,False
+11_AMP 0.0 : Conc. (nM),0.0,central_carbon,False
+55_X5P_0.0 : Conc. (nM),0.0,central_carbon,False
+45_RL5P_0.0 : Conc. (nM),0.0,central_carbon,False
+4_3DHSA 0.0 : Conc. (nM),0.0,central_carbon,False
+8_ACoA_0.0 : Conc. (nM),0.0,central_carbon,False
+10_ADP 0.0 : Conc. (nM),0.0,central_carbon,False
+49_UDP 0.0 : Conc. (nM),0.0,central_carbon,False
+51_UDPGA 0.0 : Conc. (nM),0.0,central_carbon,False
+57_G3P_0.0 : Conc. (nM),0.0,central_carbon,False
+SH7P 0.0 : Conc. (nM),0.0,central_carbon,False
+CoA Neg 0.0 : Conc. (nM),0.0,central_carbon,False
+23_G6P_0.0 : Conc. (nM),0.0,central_carbon,False
+22_G1P_0.0 : Conc. (nM),0.0,central_carbon,False
+20_F6P_0.0 : Conc. (nM),0.0,central_carbon,False
+32_KGA_0.0 : Conc. (nM),0.0,central_carbon,False
+34_MAL_0.0 : Conc. (nM),0.0,central_carbon,False
+6_6PG_0.0 : Conc. (nM),0.0,central_carbon,False
+2_3PG_0.0 : Conc. (nM),0.0,central_carbon,False
+31_CIT_0.0 : Conc. (nM),0.0,central_carbon,False
+30_ISO_0.0 : Conc. (nM),0.0,central_carbon,False
+ASP,1.737636606576655,amino_acids,True
+GABA,1.6666717530867146,amino_acids,True
+GLN,1.6156970505936825,amino_acids,True
+VAL,1.469554819056287,amino_acids,True
+PRO,1.3913248722997822,amino_acids,True
+GLY,1.379845372627933,amino_acids,True
+GLU,1.351999554724415,amino_acids,True
+ILE,1.3132136531368266,amino_acids,True
+LEU,1.252759305707528,amino_acids,True
+PHE,1.212913451157758,amino_acids,True
+SER,0.0,amino_acids,False
+CYS,0.0,amino_acids,False
+ASN,0.0,amino_acids,False
+TYR,0.0,amino_acids,False
+ALA,0.0,amino_acids,False
+ARG,0.0,amino_acids,False
+THR,0.0,amino_acids,False
+HIS,0.0,amino_acids,False
+MET,0.0,amino_acids,False
+TRP,0.0,amino_acids,False
+LYS,0.0,amino_acids,False
+Hexanal Area,3.99174421246085,aromatics,True
+"2,4-Hexadienal Area",3.425467473165722,aromatics,True
+trans-2-Hexenal Area,3.174669769297092,aromatics,True
+3-Pentanone Area,3.108922120425597,aromatics,True
+2-Pentanone Area,3.0729864885346,aromatics,True
+Isoamyl acetate Area,3.036277687258779,aromatics,True
+2-Methylbutyl acetate Area,3.0340025068673753,aromatics,True
+3-Methyl-2-buten-1-ol Area,3.030677153984337,aromatics,True
+Hexyl acetate Area,2.755196756868838,aromatics,True
+trans-2-Hexen-1-ol Area,2.6352823932789637,aromatics,True
+(E)-2-Nonenal Area,0.0,aromatics,False
+1-Butanol Area,0.0,aromatics,False
+(3Z)-3-Hexenyl acetate Area,0.0,aromatics,False
+"(2E,6Z)-nona-2,6-dienal Area",0.0,aromatics,False
+(E)-2-Octen-1-ol Area,0.0,aromatics,False
+(Z)-4-Heptenal Area,0.0,aromatics,False
+(E)-Linalool oxide Area,0.0,aromatics,False
+"(E,E)-2,4-nonadienal Area",0.0,aromatics,False
+(Z)-2-Penten-1-ol Area,0.0,aromatics,False
+1-Pentanol Area,0.0,aromatics,False
+1-Octen-3-one Area,0.0,aromatics,False
+1-Octen-3-ol Area,0.0,aromatics,False
+"2,4-Heptadienal Area",0.0,aromatics,False
+2-Heptanol Area,0.0,aromatics,False
+2-Heptanone Area,0.0,aromatics,False
+"2,6-Nonadienol Area",0.0,aromatics,False
+2-Ethylfuran Area,0.0,aromatics,False
+2-Methyl-1-butanol Area,0.0,aromatics,False
+1-Heptanol Area,0.0,aromatics,False
+1-Hexanol Area,0.0,aromatics,False
+1-Hexen-3-one Area,0.0,aromatics,False
+1-Nonanol Area,0.0,aromatics,False
+(Z)-Linalool oxide Area,0.0,aromatics,False
+(Z)-beta-Ocimene Area,0.0,aromatics,False
+(Z)-hex-2-en-1-ol Area,0.0,aromatics,False
+3-Mercapto-3-methylbutyl formate Area,0.0,aromatics,False
+3-Hexanone Area,0.0,aromatics,False
+2-Pentylfuran Area,0.0,aromatics,False
+2-Pentanol Area,0.0,aromatics,False
+2-Methylpentan-2-ol Area,0.0,aromatics,False
+2-Nonanol Area,0.0,aromatics,False
+2-Hexanone Area,0.0,aromatics,False
+3-Octanone Area,0.0,aromatics,False
+Acetal Area,0.0,aromatics,False
+Acetoin Area,0.0,aromatics,False
+Acetophenone Area,0.0,aromatics,False
+3-Methyl-2-butanone Area,0.0,aromatics,False
+3-Pentanol Area,0.0,aromatics,False
+4-Ethylphenol Area,0.0,aromatics,False
+6-Methoxyeugenol Area,0.0,aromatics,False
+6-Methyl-5-hepten-2-one Area,0.0,aromatics,False
+Butyl hexanoate Area,0.0,aromatics,False
+Butyric acid Area,0.0,aromatics,False
+Ethyl 2-methylbutyrate Area,0.0,aromatics,False
+Ethyl 3-methylbutanoate Area,0.0,aromatics,False
+Ethyl benzoate Area,0.0,aromatics,False
+Ethyl butanoate Area,0.0,aromatics,False
+Ethyl isobutyrate Area,0.0,aromatics,False
+Ethyl laurate Area,0.0,aromatics,False
+Ethyl octanoate Area,0.0,aromatics,False
+Ethyl stearate Area,0.0,aromatics,False
+Ethyl valerate Area,0.0,aromatics,False
+Allyl isothiocyanate Area,0.0,aromatics,False
+Benzaldehyde Area,0.0,aromatics,False
+Butyl 2-methylbutyrate Area,0.0,aromatics,False
+Butyl acetate Area,0.0,aromatics,False
+Butyl decanoate Area,0.0,aromatics,False
+Guaiacol Area,0.0,aromatics,False
+Geranyl isovalerate Area,0.0,aromatics,False
+Geranyl butyrate Area,0.0,aromatics,False
+Eugenol Area,0.0,aromatics,False
+Ethyl vinyl ketone Area,0.0,aromatics,False
+Hexyl butyrate Area,0.0,aromatics,False
+Heptanal Area,0.0,aromatics,False
+Heptyl acetate Area,0.0,aromatics,False
+Isobutyric acid Area,0.0,aromatics,False
+Isopropyl hexanoate Area,0.0,aromatics,False
+Methyl isobutyl ketone Area,0.0,aromatics,False
+Methyl isovalerate Area,0.0,aromatics,False
+Neryl acetate Area,0.0,aromatics,False
+Nonyl acetate Area,0.0,aromatics,False
+Isoamyl alcohol Area,0.0,aromatics,False
+Isoamyl butyrate Area,0.0,aromatics,False
+Pentyl acetate Area,0.0,aromatics,False
+Octyl acetate Area,0.0,aromatics,False
+Pentyl butyrate Area,0.0,aromatics,False
+Phenylacetaldehyde Area,0.0,aromatics,False
+Propyl butyrate Area,0.0,aromatics,False
+Propyl hexanoate Area,0.0,aromatics,False
+Propanoic acid Area,0.0,aromatics,False
+Propyl acetate Area,0.0,aromatics,False
+Tetrahydrothiophene Area,0.0,aromatics,False
+Tetradecanal Area,0.0,aromatics,False
+alpha-Thujone Area,0.0,aromatics,False
+cis-3-Hexen-1-ol Area,0.0,aromatics,False
+gamma-Undecalactone Area,0.0,aromatics,False
+gamma-Terpinene Area,0.0,aromatics,False
+trans-2-Heptenal Area,0.0,aromatics,False
+trans-2-Penten-1-ol Area,0.0,aromatics,False
+ME_2,2.6526410531604165,proteomics,True
+ME_1,2.0646092296991894,proteomics,True
+A0A804K6U0,0.5438386315925865,proteomics,False
+A0A804IWQ8,0.47367056612637126,proteomics,False
+A0A4S8JP07;A0A4S8JP07;A0A804HRQ6;A0A804HRQ8,0.2821933513138863,proteomics,False
+A0A804U5M1,0.23262022779580444,proteomics,False
+A0A4S8K2J9;A0A4S8K2J9;A0A804K4X1;A0A804L7U0;A0A804L7U1,0.1782010371571363,proteomics,False
+A0A4S8I6R3;A0A4S8I6R3;A0A804J6D9,0.12352749391341068,proteomics,False
+A0A804IAV0,0.0,proteomics,False
+A0A804IVT3,0.0,proteomics,False
+A0A804IN41,0.0,proteomics,False
+A0A4S8IRZ0;A0A4S8IRZ0,0.0,proteomics,False

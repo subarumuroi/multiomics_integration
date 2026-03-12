@@ -1,0 +1,13 @@
+{
+  "power": 12,
+  "network_type": "unsigned",
+  "module_cut_height": 0.7,
+  "merge_cut_height": 0.25,
+  "scale_free_selection": {
+    "power": 12,
+    "r_squared": 0.8169202009703005,
+    "target_r2": 0.8,
+    "selection_rule": "first_above_target",
+    "threshold_met": true
+  }
+}

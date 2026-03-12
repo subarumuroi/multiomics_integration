@@ -1,0 +1,4 @@
+Model,Accuracy,MAE
+LogisticAT,1.0,0.0
+LogisticIT,1.0,0.0
+LogisticSE,1.0,0.0

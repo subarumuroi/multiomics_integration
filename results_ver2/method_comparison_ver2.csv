@@ -1,0 +1,17 @@
+Layer,Method,Accuracy,Type,Perm_P_Value,MAE
+central_carbon,sPLS-DA,1.0,Single,0.014925373134328358,
+central_carbon,RF,1.0,Single,0.014925373134328358,
+central_carbon,Ordinal (AT),1.0,Single,0.014925373134328358,0.0
+amino_acids,sPLS-DA,1.0,Single,0.014925373134328358,
+amino_acids,RF,1.0,Single,0.014925373134328358,
+amino_acids,Ordinal (AT),1.0,Single,0.014925373134328358,0.0
+aromatics,sPLS-DA,1.0,Single,0.013245033112582781,
+aromatics,RF,1.0,Single,0.013245033112582781,
+aromatics,Ordinal (AT),1.0,Single,0.013245033112582781,0.0
+proteomics,sPLS-DA,0.6666666666666666,Single,0.05970149253731343,
+proteomics,RF,1.0,Single,0.014925373134328358,
+proteomics,Ordinal (AT),1.0,Single,0.014925373134328358,0.0
+all,DIABLO,1.0,Joint Integration,0.014925373134328358,
+all,Concat-RF,1.0,Early Fusion,0.014925373134328358,
+all,Concat-Ordinal,1.0,Early Fusion,0.013245033112582781,0.0
+all,DIABLO (wgcna reduced proteomics),1.0,WGCNA-Reduced Integration,0.014925373134328358,
